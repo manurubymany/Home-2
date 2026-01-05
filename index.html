@@ -114,13 +114,13 @@
         // --- DADOS INICIAIS ---
         const initialTasks = {
             "Segunda": [{ t: "Lavar louça", p: 20, user: "Manu" }],
-            "Terça": [{ t: "Limpar o fogão (15/15 dias)", p: 30, user: "Pedro" }],
+            "Terça": [{ t: "Lavar banheiro (15 em 15 dias)", p: 50, user: "Pedro" }],
             "Quarta": [
                 { t: "Lavar louça", p: 20, user: "Pedro" },
                 { t: "Lavar Roupas", p: 30, user: "Manu" },
                 { t: "Estender Roupas", p: 15, user: "Pedro" }
             ],
-            "Quinta": [{ t: "Lavar banheiro (15/15 dias)", p: 50, user: "Manu" }],
+            "Quinta": [{ t: "Limpar o fogão (15 em 15 dias)", p: 40, user: "Manu" }],
             "Sexta": [
                 { t: "Lavar louça", p: 20, user: "Manu" },
                 { t: "Recolher e dobrar roupa varal", p: 20, user: "Pedro" }
@@ -131,7 +131,7 @@
                 { t: "Lavar Roupas", p: 30, user: "Pedro" },
                 { t: "Estender Roupas", p: 15, user: "Manu" },
                 { t: "Varrer a casa", p: 30, user: "Pedro" },
-                { t: "Lavar tapetes (15/15 dias)", p: 40, user: "Manu" }
+                { t: "Lavar tapetes (15 em 15 dias)", p: 40, user: "Manu" }
             ],
             "Domingo": [
                 { t: "Fazer comida", p: 40, user: "Pedro" },
@@ -158,13 +158,12 @@
             { titulo: "🥟 Pastel da sogra" }
         ];
 
-        // --- ESTADO GLOBAL ---
         let db_tarefas, db_compras, db_dates, saldos, pontos, currentUser = 'Manu', diaAtual = 'Segunda';
 
-        function save() { localStorage.setItem('harmonia_data_final', JSON.stringify({ db_tarefas, db_compras, db_dates, saldos, pontos })); }
+        function save() { localStorage.setItem('harmonia_final_v1', JSON.stringify({ db_tarefas, db_compras, db_dates, saldos, pontos })); }
         
         function load() {
-            const saved = localStorage.getItem('harmonia_data_final');
+            const saved = localStorage.getItem('harmonia_final_v1');
             if (saved) {
                 const data = JSON.parse(saved);
                 db_tarefas = data.db_tarefas; db_compras = data.db_compras;
@@ -178,7 +177,6 @@
             }
         }
 
-        // --- FUNÇÕES DE RENDERIZAÇÃO ---
         function switchUser(name) {
             currentUser = name;
             document.getElementById('view-name').innerText = name;
@@ -228,10 +226,9 @@
             document.getElementById('pts-manu').innerText = pontos.Manu;
             document.getElementById('pts-pedro').innerText = pontos.Pedro;
             document.getElementById('total-sair').innerText = saldos.sair.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-            document.getElementById('total-casa').innerText = saldos.casa.toLocaleString('pt-br',{style:'currency','BRL'});
+            document.getElementById('total-casa').innerText = saldos.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
         }
 
-        // --- SISTEMA DE NAVEGAÇÃO ---
         function showMainTab(id) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('content-' + id).classList.add('active');
@@ -249,7 +246,6 @@
                 </button>`).join('');
         }
 
-        // --- FUNÇÕES DE ADIÇÃO ---
         function adicionarTransacao() {
             const val = parseFloat(document.getElementById('fin-valor').value);
             const dest = document.getElementById('fin-destino').value;
@@ -270,6 +266,12 @@
             if(db_dates.length === 0) return alert("Adicione ideias primeiro!");
             const escolhido = db_dates[Math.floor(Math.random() * db_dates.length)];
             alert(`💖 O destino é: ${escolhido.titulo.toUpperCase()}`);
+        }
+
+        function adicionarTarefaManual() {
+            const desc = prompt("Nome da tarefa:");
+            const pts = parseInt(prompt("Pontos:", "10"));
+            if(desc) { db_tarefas[diaAtual].push({ t: desc, p: pts || 10, user: currentUser }); save(); renderTarefas(); }
         }
 
         function resetarPontos() { if(confirm("Resetar placar?")) { pontos = { Manu: 0, Pedro: 0 }; save(); updateUI(); } }
