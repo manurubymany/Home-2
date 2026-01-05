@@ -4,162 +4,169 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Harmonia Hub - Manu & Pedro</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
+body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
 .tab-content{display:none}
-.tab-content.active{display:block}
+.tab-content.active{display:block;animation:slide .25s ease}
 .active-nav{border-bottom:3px solid #6366f1;color:#6366f1;font-weight:800}
+@keyframes slide{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
 </style>
 </head>
 
 <body>
 
 <header class="bg-white border-b sticky top-0 z-50 shadow-sm">
-<div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
-  <div class="flex items-center gap-2">
-    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">H</div>
-    <span class="font-bold text-lg">Harmonia<span class="text-indigo-600">.</span></span>
-  </div>
-  <div class="flex bg-slate-100 p-1 rounded-full text-xs font-semibold">
-    <button onclick="switchUser('Manu')" id="btn-Manu" class="px-4 py-1.5 rounded-full bg-white shadow text-indigo-600">Manu</button>
-    <button onclick="switchUser('Pedro')" id="btn-Pedro" class="px-4 py-1.5 rounded-full text-slate-500">Pedro</button>
-  </div>
-</div>
+  <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">H</div>
+      <span class="font-bold text-lg">Harmonia<span class="text-indigo-600">.</span></span>
+    </div>
 
-<nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase">
-  <button onclick="showMainTab('casa')" id="nav-casa" class="py-3 active-nav">🏠 Casa</button>
-  <button onclick="showMainTab('dates')" id="nav-dates" class="py-3 text-slate-400">🍷 Dates</button>
-  <button onclick="showMainTab('pontos')" id="nav-pontos" class="py-3 text-slate-400">🏆 Pontos</button>
-  <button onclick="showMainTab('financeiro')" id="nav-financeiro" class="py-3 text-slate-400">💰 Financeiro</button>
-  <button onclick="showMainTab('compras')" id="nav-compras" class="py-3 text-slate-400">🛒 Compras</button>
-  <button onclick="showMainTab('perfil')" id="nav-perfil" class="py-3 text-slate-400">💑 Perfil</button>
-</nav>
+    <div class="flex bg-slate-100 p-1 rounded-full text-xs font-semibold">
+      <button id="btn-Manu" onclick="switchUser('Manu')" class="px-4 py-1.5 rounded-full bg-white shadow text-indigo-600">Manu</button>
+      <button id="btn-Pedro" onclick="switchUser('Pedro')" class="px-4 py-1.5 rounded-full text-slate-500">Pedro</button>
+    </div>
+  </div>
+
+  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase overflow-x-auto">
+    <button id="nav-casa" onclick="showTab('casa')" class="py-3 active-nav">🏠 Casa</button>
+    <button id="nav-dates" onclick="showTab('dates')" class="py-3 text-slate-400">🍷 Dates</button>
+    <button id="nav-pontos" onclick="showTab('pontos')" class="py-3 text-slate-400">🏆 Pontos</button>
+    <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Financeiro</button>
+    <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
+  </nav>
 </header>
 
 <main class="max-w-5xl mx-auto p-4 space-y-6">
 
+<!-- CASA -->
 <section id="content-casa" class="tab-content active">
-<h2 class="text-xl font-bold mb-4">Tarefas de <span id="view-name">Manu</span></h2>
-<div id="dias-container" class="flex gap-2 mb-4"></div>
-<div id="daily-tasks" class="space-y-2"></div>
+  <h2 class="text-xl font-bold mb-3">Tarefas de <span id="view-name">Manu</span></h2>
+
+  <div id="dias" class="flex gap-2 mb-4"></div>
+  <div id="tarefas" class="space-y-3"></div>
 </section>
 
-<section id="content-dates" class="tab-content">
-<h2 class="text-xl font-bold mb-4">Ideias de Date 💖</h2>
-<button onclick="sortearDate()" class="bg-amber-100 px-4 py-2 rounded mb-4">🎲 Sortear</button>
-<div id="lista-dates" class="grid md:grid-cols-2 gap-4"></div>
+<!-- DATES -->
+<section id="content-dates" class="tab-content space-y-4">
+  <h2 class="text-xl font-bold">Ideias de Date</h2>
+  <button onclick="sortearDate()" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-lg font-bold">🎲 Sortear</button>
+  <div id="dates" class="grid md:grid-cols-2 gap-3"></div>
 </section>
 
-<section id="content-pontos" class="tab-content text-center">
-<h2 class="text-xl font-bold mb-6">Placar</h2>
-<div class="grid grid-cols-2 gap-4">
-  <div class="bg-indigo-50 p-6 rounded">
-    <p class="text-3xl font-black text-indigo-600" id="pts-manu">0</p>
-    <p class="text-xs font-bold">Manu</p>
+<!-- PONTOS -->
+<section id="content-pontos" class="tab-content">
+  <div class="grid grid-cols-2 gap-4 text-center">
+    <div class="bg-indigo-50 p-6 rounded-2xl">
+      <p class="text-3xl font-black text-indigo-600" id="pts-manu">0</p>
+      <p class="text-xs font-bold">Manu</p>
+    </div>
+    <div class="bg-teal-50 p-6 rounded-2xl">
+      <p class="text-3xl font-black text-teal-600" id="pts-pedro">0</p>
+      <p class="text-xs font-bold">Pedro</p>
+    </div>
   </div>
-  <div class="bg-teal-50 p-6 rounded">
-    <p class="text-3xl font-black text-teal-600" id="pts-pedro">0</p>
-    <p class="text-xs font-bold">Pedro</p>
-  </div>
-</div>
 </section>
 
-<section id="content-financeiro" class="tab-content">
-<div class="grid grid-cols-2 gap-4 mb-4">
-  <div class="bg-emerald-500 p-6 rounded text-white">
-    <p>Sair Juntos</p>
-    <p id="total-sair" class="text-2xl font-black">R$ 0,00</p>
+<!-- FINANCEIRO -->
+<section id="content-financeiro" class="tab-content space-y-4">
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-emerald-500 text-white p-6 rounded-2xl">
+      <p>Sair juntos</p>
+      <p class="text-2xl font-black" id="total-sair">R$ 0,00</p>
+    </div>
+    <div class="bg-indigo-600 text-white p-6 rounded-2xl">
+      <p>Casa</p>
+      <p class="text-2xl font-black" id="total-casa">R$ 0,00</p>
+    </div>
   </div>
-  <div class="bg-indigo-600 p-6 rounded text-white">
-    <p>Casa</p>
-    <p id="total-casa" class="text-2xl font-black">R$ 0,00</p>
-  </div>
-</div>
 
-<input id="fin-valor" type="number" placeholder="Valor" class="w-full p-3 mb-2 rounded bg-slate-100">
-<select id="fin-destino" class="w-full p-3 mb-2 rounded bg-slate-100">
-  <option value="sair">Sair Juntos</option>
-  <option value="casa">Casa</option>
-</select>
-<button onclick="adicionarTransacao()" class="w-full bg-slate-900 text-white p-3 rounded">Adicionar</button>
+  <input id="valor" type="number" placeholder="Valor" class="w-full p-3 rounded bg-slate-100">
+  <select id="destino" class="w-full p-3 rounded bg-slate-100">
+    <option value="sair">Sair juntos</option>
+    <option value="casa">Casa</option>
+  </select>
+  <button onclick="addValor()" class="w-full bg-slate-900 text-white p-3 rounded-lg">Adicionar</button>
 </section>
 
-<section id="content-compras" class="tab-content">
-<h2 class="text-xl font-bold mb-4">Lista de Compras</h2>
-<div id="lista-compras-geral" class="space-y-2"></div>
-</section>
-
-<section id="content-perfil" class="tab-content">
-<h2 class="text-xl font-bold mb-6">Perfil do Casal 💑</h2>
-<div class="grid md:grid-cols-2 gap-4">
-  <div class="bg-indigo-50 p-6 rounded">
-    <h3 class="font-bold text-indigo-700">Manu</h3>
-    <p>Pontos acumulados</p>
-    <p id="perfil-manu" class="text-3xl font-black text-indigo-600">0</p>
-  </div>
-  <div class="bg-teal-50 p-6 rounded">
-    <h3 class="font-bold text-teal-700">Pedro</h3>
-    <p>Pontos acumulados</p>
-    <p id="perfil-pedro" class="text-3xl font-black text-teal-600">0</p>
-  </div>
-</div>
+<!-- COMPRAS -->
+<section id="content-compras" class="tab-content space-y-2">
+  <h2 class="text-xl font-bold">Lista de Compras</h2>
+  <div id="compras"></div>
 </section>
 
 </main>
 
 <script>
-const tasks={
-"Segunda":[{t:"Lavar louça",p:20,user:"Manu"}],
-"Terça":[{t:"Lavar banheiro (15/15)",p:50,user:"Pedro"}],
-"Quarta":[{t:"Lavar louça",p:20,user:"Pedro"},{t:"Lavar roupas",p:30,user:"Manu"}],
-"Quinta":[{t:"Limpar fogão (15/15)",p:40,user:"Manu"}],
-"Sexta":[{t:"Lavar louça",p:20,user:"Manu"}],
-"Sábado":[{t:"Fazer comida",p:40,user:"Manu"}],
-"Domingo":[{t:"Passar pano",p:35,user:"Pedro"}]
+const tarefas={
+"Segunda":[{t:"Lavar louça",p:20,u:"Manu"}],
+"Terça":[{t:"Lavar banheiro (15/15 dias)",p:50,u:"Pedro"}],
+"Quarta":[{t:"Lavar louça",p:20,u:"Pedro"},{t:"Lavar roupas",p:30,u:"Manu"}],
+"Quinta":[{t:"Limpar fogão (15/15 dias)",p:40,u:"Manu"}],
+"Sexta":[{t:"Lavar louça",p:20,u:"Manu"}],
+"Sábado":[{t:"Fazer comida",p:40,u:"Manu"}],
+"Domingo":[{t:"Passar pano",p:35,u:"Pedro"}]
 };
 
-const dates=["🌭 Night Dog","🥩 Estação da Picanha","🎬 Cinema"];
-const compras=["Arroz","Feijão","Leite"];
+const dates=[
+"🌭 Night Dog","🥩 Estação da Picanha","🥟 Pastel da Sogra",
+"☕ Cafés","🎬 Cinema","🍣 Restaurante Japonês"
+];
 
-let user="Manu",day="Segunda",pontos={Manu:0,Pedro:0},saldos={sair:0,casa:0};
+const compras=["Arroz","Feijão","Macarrão","Leite","Coca-cola"];
+
+let user="Manu",dia="Segunda",pontos={Manu:0,Pedro:0},saldo={sair:0,casa:0};
+
+function showTab(id){
+document.querySelectorAll('.tab-content').forEach(s=>s.classList.remove('active'));
+document.getElementById('content-'+id).classList.add('active');
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav','text-indigo-600'));
+document.getElementById('nav-'+id).classList.add('active-nav','text-indigo-600');
+}
 
 function switchUser(u){
 user=u;
-document.getElementById("view-name").innerText=u;
+document.getElementById('view-name').innerText=u;
+document.getElementById('btn-Manu').classList.toggle('bg-white',u==="Manu");
+document.getElementById('btn-Pedro').classList.toggle('bg-white',u==="Pedro");
 render();
 }
 
-function showMainTab(id){
-document.querySelectorAll(".tab-content").forEach(s=>s.classList.remove("active"));
-document.getElementById("content-"+id).classList.add("active");
-}
-
 function render(){
-document.getElementById("daily-tasks").innerHTML=(tasks[day]||[])
-.filter(t=>t.user===user).map(t=>`<div>${t.t}</div>`).join("")||"Folga 🎉";
+document.getElementById('tarefas').innerHTML=(tarefas[dia]||[])
+.filter(t=>t.u===user)
+.map((t,i)=>`<div class="bg-white p-4 rounded-xl border flex justify-between">
+<span>${t.t}</span>
+<button onclick="concluir(${i})" class="text-xs bg-indigo-100 px-3 py-1 rounded">OK</button>
+</div>`).join("")||"Folga 🎉";
 
-document.getElementById("pts-manu").innerText=pontos.Manu;
-document.getElementById("pts-pedro").innerText=pontos.Pedro;
-document.getElementById("perfil-manu").innerText=pontos.Manu;
-document.getElementById("perfil-pedro").innerText=pontos.Pedro;
-document.getElementById("total-sair").innerText=saldos.sair.toLocaleString("pt-br",{style:"currency",currency:"BRL"});
-document.getElementById("total-casa").innerText=saldos.casa.toLocaleString("pt-br",{style:"currency",currency:"BRL"});
+document.getElementById('pts-manu').innerText=pontos.Manu;
+document.getElementById('pts-pedro').innerText=pontos.Pedro;
+document.getElementById('total-sair').innerText=saldo.sair.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+document.getElementById('total-casa').innerText=saldo.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
 
-document.getElementById("lista-dates").innerHTML=dates.map(d=>`<div>${d}</div>`).join("");
-document.getElementById("lista-compras-geral").innerHTML=compras.map(c=>`<div>${c}</div>`).join("");
+document.getElementById('dates').innerHTML=dates.map(d=>`<div class="bg-white p-3 rounded-xl border">${d}</div>`).join("");
+document.getElementById('compras').innerHTML=compras.map(c=>`<div class="bg-white p-2 rounded border">${c}</div>`).join("");
 
-document.getElementById("dias-container").innerHTML=
-["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"]
-.map(d=>`<button onclick="day='${d}';render()" class="px-3 py-1 bg-white border rounded">${d.slice(0,3)}</button>`).join("");
+document.getElementById('dias').innerHTML=Object.keys(tarefas)
+.map(d=>`<button onclick="dia='${d}';render()" class="px-3 py-1 rounded bg-white border">${d.slice(0,3)}</button>`).join("");
 }
 
-function adicionarTransacao(){
-let v=Number(document.getElementById("fin-valor").value);
+function concluir(i){
+pontos[user]+=tarefas[dia][i].p;
+tarefas[dia].splice(i,1);
+render();
+}
+
+function addValor(){
+const v=Number(valor.value);
 if(!v)return;
-saldos[document.getElementById("fin-destino").value]+=v;
-document.getElementById("fin-valor").value="";
+saldo[destino.value]+=v;
+valor.value="";
 render();
 }
 
