@@ -116,7 +116,6 @@
   </section>
 
   <section id="content-lazer" class="tab-content space-y-4">
-    <button onclick="sortearLazerGlobal()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white p-5 rounded-2xl font-black shadow-lg text-sm uppercase">🎰 Sortear Qualquer Lugar</button>
     <div class="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto no-scrollbar" id="lazer-tabs"></div>
     <div class="bg-white p-4 rounded-2xl border space-y-2 shadow-sm">
       <input id="lazerNome" placeholder="Nome do lugar" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
@@ -128,17 +127,16 @@
 
   <section id="content-historico" class="tab-content space-y-4">
     <div class="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto no-scrollbar" id="hist-tabs-container"></div>
-    <div id="hist-user-filter" class="flex gap-2 justify-center py-1">
-        <button id="hist-f-u1" onclick="histUserFilter=db.config.user1;render()" class="text-[9px] font-bold px-3 py-1 rounded-full border"></button>
-        <button id="hist-f-u2" onclick="histUserFilter=db.config.user2;render()" class="text-[9px] font-bold px-3 py-1 rounded-full border"></button>
-    </div>
     <div id="historicoContainer" class="space-y-2"></div>
-    <button onclick="limparHistorico()" class="w-full py-2 text-[9px] font-bold text-rose-400 uppercase opacity-50">Limpar Histórico da Aba</button>
+    <button onclick="limparHistorico()" class="w-full py-2 text-[9px] font-bold text-rose-400 uppercase opacity-50">Limpar Histórico</button>
   </section>
 
   <section id="content-compras" class="tab-content space-y-4">
-      <div class="bg-white p-3 rounded-2xl border flex gap-2"><input id="compraItem" placeholder="Item faltando..." class="flex-1 p-2 bg-slate-50 rounded-xl text-sm border-none"><button onclick="addCompra()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold text-xl">+</button></div>
-      <div id="comprasList" class="bg-white rounded-2xl border divide-y overflow-hidden"></div>
+      <div class="bg-white p-3 rounded-2xl border flex gap-2">
+          <input id="compraItem" placeholder="Item faltando..." class="flex-1 p-2 bg-slate-50 rounded-xl text-sm border-none">
+          <button onclick="addCompra()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold text-xl">+</button>
+      </div>
+      <div id="comprasList" class="space-y-2"></div>
   </section>
 
   <section id="content-agenda" class="tab-content space-y-4">
@@ -156,12 +154,11 @@
 
   <section id="content-perfil" class="tab-content space-y-4">
     <div class="bg-white p-6 rounded-2xl border space-y-4 shadow-sm">
-      <h3 class="font-black text-indigo-600 uppercase text-xs">Ajustar Nomes</h3>
-      <div class="text-[10px] text-slate-400 font-bold uppercase">Editando agora: <span id="perfil-status" class="text-indigo-600"></span></div>
+      <h3 class="font-black text-indigo-600 uppercase text-xs">Configurações</h3>
       <input id="input-user1" placeholder="Nome Usuário 1" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold">
       <input id="input-user2" placeholder="Nome Usuário 2" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold">
       <button onclick="saveUsers()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm uppercase">Salvar Nomes</button>
-      <button onclick="resetScores()" class="w-full py-2 text-[9px] font-bold text-rose-400 uppercase border border-rose-100 rounded-xl mt-4">Zerar Placar de Pontos</button>
+      <button onclick="resetScores()" class="w-full py-2 text-[9px] font-bold text-rose-400 uppercase border border-rose-100 rounded-xl mt-4">Zerar Placar</button>
     </div>
   </section>
 </main>
@@ -188,22 +185,19 @@ const ranks = [
     { min: 1000, nome: "CEO do Lar", cor: "text-rose-500" }
 ];
 
-function getRank(pts) {
-    return ranks.slice().reverse().find(r => pts >= r.min) || ranks[0];
-}
+function getRank(pts) { return ranks.slice().reverse().find(r => pts >= r.min) || ranks[0]; }
 
 let currentUser = "Manu";
 let currentDay = "Segunda";
 let currentLazerCat = "Bares";
 let currentHistTab = "tarefas";
-let histUserFilter = "";
 
 let db = {
     config: { user1: "Manu", user2: "Pedro" },
     scores: {},
     tarefas: {},
     lazer: [],
-    financeiro: { salario: 0, vrava: 0, lazer: 0, casa: 0, fixo_alim: 0, fixo_net: 0, fixo_cel: 0, fixo_card: 0, total_recebido_sal: 0, total_recebido_ben: 0 },
+    financeiro: { salario: 0, vrava: 0, total_recebido_sal: 0, total_recebido_ben: 0 },
     compras: [],
     agenda: [],
     hist: { tarefas: [], lazer: [], finanças: [], compras: [], agenda: [] }
@@ -213,16 +207,12 @@ dbRef.on('value', (s) => {
     const data = s.val();
     if (data) { 
         db = data;
-        if(!db.scores) db.scores = {};
-        if(!db.financeiro) db.financeiro = { salario: 0, vrava: 0, lazer: 0, casa: 0, fixo_alim: 0, fixo_net: 0, fixo_cel: 0, fixo_card: 0 };
-        if(!histUserFilter) histUserFilter = db.config.user1;
         render(); 
     }
 });
 
 function save() { dbRef.set(db); }
-function switchUser(u) { currentUser = u; render(); }
-function switchHistTab(t) { currentHistTab = t; render(); }
+
 function showTab(id) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById('content-'+id).classList.add('active');
@@ -230,88 +220,15 @@ function showTab(id) {
     document.getElementById('nav-'+id).classList.add('active-nav');
 }
 
-function addFinanceiro(m) {
-    const v = Number(document.getElementById('finValor').value) * m;
-    const d = document.getElementById('finDestino').value;
-    const j = document.getElementById('finJust').value || "Lançamento";
-    if(!v) return;
-
-    if(d === 'salario' && m > 0) {
-        db.financeiro.salario += v;
-        db.financeiro.total_recebido_sal = (db.financeiro.total_recebido_sal || 0) + v;
-    } else if(d === 'vrava' && m > 0) {
-        db.financeiro.vrava += v;
-        db.financeiro.total_recebido_ben = (db.financeiro.total_recebido_ben || 0) + v;
-    } else if(d === 'fixo_alim') {
-        db.financeiro.vrava += v; // v é negativo
-    } else {
-        db.financeiro.salario += v; // v é negativo
-    }
-
-    db.hist.finanças.unshift({ id: Date.now(), v, d, j, u: currentUser, date: new Date().toLocaleDateString('pt-br') });
-    document.getElementById('finValor').value = "";
-    document.getElementById('finJust').value = "";
-    save();
-}
-
-function renderCalendar() {
-    const grid = document.getElementById('calendar-grid');
-    const title = document.getElementById('calendar-title');
-    const now = new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-    
-    const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-    title.innerText = `${meses[now.getMonth()]} ${now.getFullYear()}`;
-    
-    let html = ['D','S','T','Q','Q','S','S'].map(d => `<div class="font-black text-slate-300">${d}</div>`).join("");
-    for(let i=0; i<firstDay; i++) html += `<div></div>`;
-    for(let i=1; i<=daysInMonth; i++) {
-        const isToday = i === now.getDate() ? 'today' : '';
-        html += `<div class="calendar-day ${isToday} py-1">${i}</div>`;
-    }
-    grid.innerHTML = html;
-}
+function switchUser(u) { currentUser = u; render(); }
 
 function render() {
-    // BOTÕES USUÁRIO
-    const btnU1 = document.getElementById('btn-user1');
-    const btnU2 = document.getElementById('btn-user2');
-    btnU1.innerText = db.config.user1;
-    btnU2.innerText = db.config.user2;
-    btnU1.className = currentUser === db.config.user1 ? "px-4 py-1.5 rounded-full transition-all uppercase active-user-btn" : "px-4 py-1.5 rounded-full transition-all uppercase text-slate-400";
-    btnU2.className = currentUser === db.config.user2 ? "px-4 py-1.5 rounded-full transition-all uppercase active-user-btn" : "px-4 py-1.5 rounded-full transition-all uppercase text-slate-400";
+    // USUÁRIOS E PLACAR
+    document.getElementById('btn-user1').innerText = db.config.user1;
+    document.getElementById('btn-user2').innerText = db.config.user2;
+    document.getElementById('btn-user1').className = currentUser === db.config.user1 ? "px-4 py-1.5 rounded-full transition-all uppercase active-user-btn" : "px-4 py-1.5 rounded-full transition-all uppercase text-slate-400";
+    document.getElementById('btn-user2').className = currentUser === db.config.user2 ? "px-4 py-1.5 rounded-full transition-all uppercase active-user-btn" : "px-4 py-1.5 rounded-full transition-all uppercase text-slate-400";
 
-    // PERFIL STATUS
-    document.getElementById('perfil-status').innerText = currentUser;
-
-    // FINANCEIRO RENDER
-    const f = db.financeiro;
-    document.getElementById('fin-salario-res').innerText = (f.salario || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    document.getElementById('fin-vrava-res').innerText = (f.vrava || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    
-    const percSal = Math.min(100, Math.round(((f.total_recebido_sal - f.salario) / f.total_recebido_sal) * 100)) || 0;
-    const percBen = Math.min(100, Math.round(((f.total_recebido_ben - f.vrava) / f.total_recebido_ben) * 100)) || 0;
-    
-    document.getElementById('perc-sal').innerText = percSal + "%";
-    document.getElementById('bar-sal').style.width = percSal + "%";
-    document.getElementById('perc-ben').innerText = percBen + "%";
-    document.getElementById('bar-ben').style.width = percBen + "%";
-
-    // LAZER TABS
-    const cats = ["Bares", "Cafés", "Restaurantes", "Cinemas"];
-    document.getElementById('lazer-tabs').innerHTML = cats.map(c => `<button onclick="currentLazerCat='${c}';render()" class="flex-1 py-2 text-[9px] font-bold rounded-lg ${currentLazerCat===c?'active-sub':'text-slate-500'} uppercase">${c}</button>`).join("");
-    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(l => l.cat === currentLazerCat).map(l => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center"><span class="text-slate-700 font-bold text-sm">${l.n}</span><button onclick="db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()" class="text-rose-400 font-bold">✕</button></div>`).join("");
-
-    // HISTORICO TABS
-    const hTabs = ['tarefas', 'lazer', 'finanças', 'compras', 'agenda'];
-    document.getElementById('hist-tabs-container').innerHTML = hTabs.map(t => `<button onclick="switchHistTab('${t}')" class="flex-1 py-2 text-[8px] font-bold rounded-lg uppercase px-3 ${currentHistTab === t ? 'active-sub' : 'text-slate-500'}">${t}</button>`).join("");
-    
-    // AGENDA
-    renderCalendar();
-    document.getElementById('agendaList').innerHTML = (db.agenda || []).map(a => `<div class="bg-white p-3 rounded-xl border"><p class="text-[7px] font-black text-indigo-400 uppercase">${a.d}</p><p class="text-xs font-bold text-slate-700">${a.desc}</p></div>`).join("");
-
-    // OUTROS (TAREFAS, SCORES, ETC) - Mantidos do original
     const s1 = db.scores[db.config.user1] || 0;
     const s2 = db.scores[db.config.user2] || 0;
     const r1 = getRank(s1); const r2 = getRank(s2);
@@ -319,30 +236,131 @@ function render() {
     document.getElementById('score-name2').innerHTML = `${db.config.user2} <br> <span class="${r2.cor}">[${r2.nome}]</span>`;
     document.getElementById('score-val1').innerText = s1 + " pts";
     document.getElementById('score-val2').innerText = s2 + " pts";
-    
+
+    // DIAS TAREFAS
     const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
     document.getElementById('list-dias').innerHTML = dias.map(d => `<button onclick="currentDay='${d}';render()" class="px-4 py-2 rounded-xl text-[9px] font-black ${currentDay===d?'bg-indigo-600 text-white':'bg-white text-slate-400 border uppercase'}">${d}</button>`).join("");
-    document.getElementById('tarefasList').innerHTML = (db.tarefas[currentDay] || []).map(t => `<div class="bg-white p-4 rounded-2xl border flex justify-between items-center"><div><p class="text-[8px] font-black text-indigo-500 uppercase">${t.u}</p><p class="font-bold text-slate-700 text-sm">${t.t}</p></div><button onclick="concluirTarefa(${t.id},'${currentDay}')" class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full font-bold">✓</button></div>`).join("");
+    
+    const tarefas = db.tarefas[currentDay] || [];
+    document.getElementById('tarefasList').innerHTML = tarefas.map(t => `
+        <div class="bg-white p-4 rounded-2xl border flex justify-between items-center shadow-sm">
+            <div><p class="text-[8px] font-black text-indigo-500 uppercase">${t.u}</p><p class="font-bold text-slate-700 text-sm">${t.t}</p></div>
+            <button onclick="concluirTarefa('${t.id}', '${currentDay}')" class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full font-bold">✓</button>
+        </div>`).join("");
 
-    // HISTORICO FILTRO
-    document.getElementById('hist-f-u1').innerText = db.config.user1;
-    document.getElementById('hist-f-u2').innerText = db.config.user2;
-    document.getElementById('hist-user-filter').style.display = currentHistTab==='tarefas'?'flex':'none';
+    // FINANCEIRO
+    const f = db.financeiro || {salario:0, vrava:0};
+    document.getElementById('fin-salario-res').innerText = (f.salario || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+    document.getElementById('fin-vrava-res').innerText = (f.vrava || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+    
+    const percSal = Math.min(100, Math.round(((f.total_recebido_sal - f.salario) / f.total_recebido_sal) * 100)) || 0;
+    const percBen = Math.min(100, Math.round(((f.total_recebido_ben - f.vrava) / f.total_recebido_ben) * 100)) || 0;
+    document.getElementById('bar-sal').style.width = percSal + "%";
+    document.getElementById('bar-ben').style.width = percBen + "%";
+
+    // LAZER
+    const cats = ["Bares", "Cafés", "Restaurantes", "Cinemas"];
+    document.getElementById('lazer-tabs').innerHTML = cats.map(c => `<button onclick="currentLazerCat='${c}';render()" class="flex-1 py-2 text-[9px] font-bold rounded-lg ${currentLazerCat===c?'active-sub':'text-slate-500'} uppercase">${c}</button>`).join("");
+    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(l => l.cat === currentLazerCat).map(l => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center"><span class="text-slate-700 font-bold text-sm">${l.n}</span><button onclick="removerLazer(${l.id})" class="text-rose-400 font-bold">✕</button></div>`).join("");
+
+    // COMPRAS
+    document.getElementById('comprasList').innerHTML = (db.compras || []).map(c => `
+        <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+            <span class="text-sm font-bold text-slate-700">${c.val}</span>
+            <button onclick="concluirCompra(${c.id})" class="text-indigo-600 font-bold px-2">✓</button>
+        </div>`).join("");
+
+    // HISTÓRICO
+    const hTabs = ['tarefas', 'lazer', 'finanças', 'compras', 'agenda'];
+    document.getElementById('hist-tabs-container').innerHTML = hTabs.map(t => `<button onclick="currentHistTab='${t}';render()" class="flex-1 py-2 text-[8px] font-bold rounded-lg uppercase ${currentHistTab === t ? 'active-sub' : 'text-slate-500'}">${t}</button>`).join("");
     const items = db.hist[currentHistTab] || [];
-    document.getElementById('historicoContainer').innerHTML = items.length ? items.map(i => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center"><div><p class="text-[7px] font-black text-slate-400 uppercase">${i.date} - ${i.u}</p><p class="text-xs font-bold text-slate-700">${i.j || i.n || i.val || i.desc}</p></div></div>`).join("") : '<p class="text-center text-[10px] text-slate-400 py-10">VAZIO</p>';
+    document.getElementById('historicoContainer').innerHTML = items.map(i => `<div class="bg-white p-2 rounded-lg border text-[10px]"><b>${i.u}</b>: ${i.j || i.t || i.val || i.n || i.desc} <span class="float-right text-slate-400">${i.date}</span></div>`).join("");
 }
 
-// Funções de ação (addTarefa, concluirTarefa, etc) permanecem as mesmas.
-function addTarefa() { const t = document.getElementById('novaTarefa').value; if(!t) return; if(!db.tarefas[currentDay]) db.tarefas[currentDay] = []; db.tarefas[currentDay].push({id: Date.now(), t, u: currentUser}); document.getElementById('novaTarefa').value = ""; save(); }
-function concluirTarefa(id, dia) { const idx = db.tarefas[dia].findIndex(x => x.id === id); const item = db.tarefas[dia][idx]; db.scores[item.u] = (db.scores[item.u] || 0) + 10; db.hist.tarefas.unshift({ ...item, date: new Date().toLocaleDateString('pt-br') }); db.tarefas[dia].splice(idx, 1); save(); }
-function addCompra() { const val = document.getElementById('compraItem').value; if(!val) return; db.compras.push({id: Date.now(), val, u: currentUser}); document.getElementById('compraItem').value = ""; save(); }
-function concluirCompra(id) { const idx = db.compras.findIndex(x => x.id === id); db.hist.compras.unshift({ ...db.compras[idx], date: new Date().toLocaleDateString('pt-br') }); db.compras.splice(idx, 1); save(); }
-function addLazer() { const n = document.getElementById('lazerNome').value; const v = document.getElementById('lazerValor').value; if(!n) return; const item = {id: Date.now(), n, v, cat: currentLazerCat, u: currentUser, date: new Date().toLocaleDateString('pt-br')}; db.lazer.push(item); db.hist.lazer.unshift(item); document.getElementById('lazerNome').value = ""; save(); }
-function addAgenda() { const d = document.getElementById('ageData').value; const desc = document.getElementById('ageDesc').value; if(!d || !desc) return; const item = {id: Date.now(), d, desc, u: currentUser, date: new Date().toLocaleDateString('pt-br')}; db.agenda.push(item); db.hist.agenda.unshift(item); save(); }
-function saveUsers() { const n1 = document.getElementById('input-user1').value; const n2 = document.getElementById('input-user2').value; if(n1) db.config.user1 = n1; if(n2) db.config.user2 = n2; save(); }
-function resetScores() { if(confirm("Zerar placar?")) { db.scores[db.config.user1]=0; db.scores[db.config.user2]=0; save(); } }
-function limparHistorico() { if(confirm("Limpar esta aba?")) { db.hist[currentHistTab] = []; save(); } }
+// FUNÇÕES DE AÇÃO
+function addTarefa() { 
+    const t = document.getElementById('novaTarefa').value; 
+    if(!t) return;
+    if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
+    db.tarefas[currentDay].push({id: Date.now().toString(), t, u: currentUser});
+    document.getElementById('novaTarefa').value = "";
+    save();
+}
 
+function concluirTarefa(id, dia) {
+    const idx = db.tarefas[dia].findIndex(x => x.id === id);
+    const item = db.tarefas[dia][idx];
+    db.scores[item.u] = (db.scores[item.u] || 0) + 10;
+    if(!db.hist.tarefas) db.hist.tarefas = [];
+    db.hist.tarefas.unshift({...item, date: new Date().toLocaleDateString('pt-br')});
+    db.tarefas[dia].splice(idx, 1);
+    save();
+}
+
+function addFinanceiro(m) {
+    const v = Number(document.getElementById('finValor').value) * m;
+    const d = document.getElementById('finDestino').value;
+    const j = document.getElementById('finJust').value || "Lançamento";
+    if(!v) return;
+    if(!db.financeiro) db.financeiro = {salario:0, vrava:0, total_recebido_sal:0, total_recebido_ben:0};
+
+    if(d === 'salario' && m > 0) { db.financeiro.salario += v; db.financeiro.total_recebido_sal += v; }
+    else if(d === 'vrava' && m > 0) { db.financeiro.vrava += v; db.financeiro.total_recebido_ben += v; }
+    else if(d === 'fixo_alim') db.financeiro.vrava += v;
+    else db.financeiro.salario += v;
+
+    if(!db.hist.finanças) db.hist.finanças = [];
+    db.hist.finanças.unshift({id: Date.now(), v, j, u: currentUser, date: new Date().toLocaleDateString('pt-br')});
+    document.getElementById('finValor').value = "";
+    document.getElementById('finJust').value = "";
+    save();
+}
+
+function addCompra() {
+    const val = document.getElementById('compraItem').value;
+    if(!val) return;
+    if(!db.compras) db.compras = [];
+    db.compras.push({id: Date.now(), val, u: currentUser});
+    document.getElementById('compraItem').value = "";
+    save();
+}
+
+function concluirCompra(id) {
+    const idx = db.compras.findIndex(x => x.id === id);
+    if(!db.hist.compras) db.hist.compras = [];
+    db.hist.compras.unshift({...db.compras[idx], date: new Date().toLocaleDateString('pt-br')});
+    db.compras.splice(idx, 1);
+    save();
+}
+
+function addLazer() {
+    const n = document.getElementById('lazerNome').value;
+    if(!n) return;
+    if(!db.lazer) db.lazer = [];
+    const item = {id: Date.now(), n, cat: currentLazerCat, u: currentUser, date: new Date().toLocaleDateString('pt-br')};
+    db.lazer.push(item);
+    document.getElementById('lazerNome').value = "";
+    save();
+}
+
+function removerLazer(id) {
+    db.lazer = db.lazer.filter(x => x.id !== id);
+    save();
+}
+
+function saveUsers() {
+    const n1 = document.getElementById('input-user1').value;
+    const n2 = document.getElementById('input-user2').value;
+    if(n1) db.config.user1 = n1;
+    if(n2) db.config.user2 = n2;
+    save();
+    alert("Nomes atualizados!");
+}
+
+function resetScores() { if(confirm("Zerar placar?")) { db.scores = {}; save(); } }
+function limparHistorico() { if(confirm("Limpar?")) { db.hist[currentHistTab] = []; save(); } }
+
+// Inicialização
 render();
 </script>
 </body>
