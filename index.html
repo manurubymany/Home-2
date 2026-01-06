@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Harmonia Hub</title>
+<title>Organizador Pessoal</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
+body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
 .tab-content{display:none}
-.tab-content.active{display:block;animation:fade .2s}
+.tab-content.active{display:block;animation:slide .25s ease}
 .active-nav{border-bottom:3px solid #6366f1;color:#6366f1;font-weight:800}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+@keyframes slide{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
 </style>
 </head>
 
@@ -22,7 +22,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
 <!-- LOGIN -->
 <div id="login" class="min-h-screen flex items-center justify-center">
   <div class="bg-white p-6 rounded-xl shadow w-80 space-y-4">
-    <h1 class="text-xl font-bold text-center">Harmonia Hub</h1>
+    <h1 class="text-xl font-bold text-center">Organizador Pessoal</h1>
     <input id="loginNome" placeholder="Seu nome" class="w-full p-3 bg-slate-100 rounded">
     <button onclick="entrar()" class="w-full bg-indigo-600 text-white p-3 rounded">Entrar</button>
   </div>
@@ -31,16 +31,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
 <!-- APP -->
 <div id="app" class="hidden">
 
-<header class="bg-white border-b sticky top-0 z-50">
+<header class="bg-white border-b sticky top-0 z-50 shadow-sm">
   <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
-    <span class="font-bold text-lg">Harmonia<span class="text-indigo-600">.</span></span>
+    <span class="font-bold text-lg">Organizador<span class="text-indigo-600"> Pessoal</span></span>
     <button onclick="showTab('perfil')" class="text-xs font-bold">👤 Perfil</button>
   </div>
 
-  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase">
+  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase overflow-x-auto">
     <button id="nav-tarefas" onclick="showTab('tarefas')" class="py-3 active-nav">🏠 Tarefas</button>
     <button id="nav-lazer" onclick="showTab('lazer')" class="py-3 text-slate-400">🍷 Lazer</button>
     <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Financeiro</button>
+    <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
   </nav>
 </header>
 
@@ -58,7 +59,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
     <button onclick="addTarefa()" class="bg-indigo-600 text-white px-4 rounded">+</button>
   </div>
 
-  <div id="tarefas"></div>
+  <div id="tarefas" class="space-y-2"></div>
 </section>
 
 <!-- LAZER -->
@@ -73,20 +74,41 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
     <button onclick="addLazer()" class="bg-amber-500 text-white px-4 rounded">+</button>
   </div>
 
-  <div id="lazer"></div>
+  <div id="lazer" class="space-y-2"></div>
 </section>
 
 <!-- FINANCEIRO -->
-<section id="content-financeiro" class="tab-content space-y-3">
+<section id="content-financeiro" class="tab-content space-y-4">
   <div class="flex justify-between items-center">
     <h2 class="text-xl font-bold">Financeiro</h2>
     <button onclick="alert(histFinanceiro.join('\n')||'Sem histórico')" class="text-xs">📜 Histórico</button>
   </div>
 
-  <input id="valor" type="number" placeholder="Valor" class="w-full p-3 bg-slate-100 rounded">
+  <input id="valor" type="number" placeholder="Valor" class="w-full p-3 rounded bg-slate-100">
+  <select id="destino" class="w-full p-3 rounded bg-slate-100">
+    <option value="sair">Sair juntos</option>
+    <option value="casa">Casa</option>
+    <option value="lazer">Lazer</option>
+  </select>
   <button onclick="addValor()" class="w-full bg-slate-900 text-white p-3 rounded">Adicionar</button>
 
   <p class="font-bold">Total: <span id="total">R$ 0,00</span></p>
+</section>
+
+<!-- COMPRAS -->
+<section id="content-compras" class="tab-content space-y-3">
+  <h2 class="text-xl font-bold">Compras</h2>
+
+  <input id="compraNome" placeholder="O que comprar?" class="w-full p-3 bg-slate-100 rounded">
+  <input id="compraValor" type="number" placeholder="Valor" class="w-full p-3 bg-slate-100 rounded">
+  <select id="compraCategoria" class="w-full p-3 bg-slate-100 rounded">
+    <option value="Mercado">Mercado</option>
+    <option value="Casa">Casa</option>
+    <option value="Lazer">Lazer</option>
+  </select>
+  <button onclick="addCompra()" class="w-full bg-emerald-600 text-white p-3 rounded">Adicionar compra</button>
+
+  <div id="listaCompras" class="space-y-2"></div>
 </section>
 
 <!-- PERFIL -->
@@ -96,24 +118,24 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#F8FAFC}
 </section>
 
 </main>
-</div>
 
 <script>
 let usuario=""
-let tarefas=[]
-let lazer=[]
-let saldo=0
+let tarefas = []
+let lazer = []
+let saldo = 0
+let compras = []
 
-let histTarefas=[]
-let histLazer=[]
-let histFinanceiro=[]
+let histTarefas = []
+let histLazer = []
+let histFinanceiro = []
 
 function entrar(){
   usuario=loginNome.value
   if(!usuario) return
   login.classList.add("hidden")
   app.classList.remove("hidden")
-  perfilNome.innerText=usuario
+  perfilNome.innerText = usuario
   render()
 }
 
@@ -125,7 +147,7 @@ function showTab(id){
 }
 
 function addTarefa(){
-  if(!novaTarefa.value)return
+  if(!novaTarefa.value) return
   tarefas.push(novaTarefa.value)
   novaTarefa.value=""
   render()
@@ -138,7 +160,7 @@ function removeTarefa(i){
 }
 
 function addLazer(){
-  if(!novoLazer.value)return
+  if(!novoLazer.value) return
   lazer.push(novoLazer.value)
   novoLazer.value=""
   render()
@@ -151,35 +173,48 @@ function removeLazer(i){
 }
 
 function addValor(){
-  if(!valor.value)return
-  saldo+=Number(valor.value)
-  histFinanceiro.push(`R$ ${valor.value}`)
+  const v = Number(valor.value)
+  const d = destino.value
+  if(!v) return
+  saldo += v
+  histFinanceiro.push(`${d} - R$ ${v}`)
   valor.value=""
   render()
 }
 
-function render(){
-  tarefasEl.innerHTML=""
-  tarefasEl.innerHTML=tarefas.map((t,i)=>`
-    <div class="bg-white p-3 rounded flex justify-between">
-      ${t}
-      <button onclick="removeTarefa(${i})">❌</button>
-    </div>`).join("")
-
-  document.getElementById('tarefas').innerHTML=tarefas.map((t,i)=>`
-    <div class="bg-white p-3 rounded flex justify-between">
-      ${t}
-      <button onclick="removeTarefa(${i})">❌</button>
-    </div>`).join("")
-
-  document.getElementById('lazer').innerHTML=lazer.map((l,i)=>`
-    <div class="bg-white p-3 rounded flex justify-between">
-      ${l}
-      <button onclick="removeLazer(${i})">❌</button>
-    </div>`).join("")
-
-  total.innerText=saldo.toLocaleString('pt-br',{style:'currency',currency:'BRL'})
+function addCompra(){
+  const nome = compraNome.value
+  const valorCompra = Number(compraValor.value)
+  const categoria = compraCategoria.value
+  if(!nome || !valorCompra) return
+  compras.push({nome, valorCompra, categoria})
+  saldo += valorCompra
+  histFinanceiro.push(`${nome} - ${categoria} - R$ ${valorCompra}`)
+  compraNome.value=""
+  compraValor.value=""
+  render()
 }
+
+function render(){
+  document.getElementById('tarefas').innerHTML = tarefas.map((t,i)=>
+    `<div class="bg-white p-3 rounded flex justify-between">${t}<button onclick="removeTarefa(${i})">❌</button></div>`
+  ).join("")
+
+  document.getElementById('lazer').innerHTML = lazer.map((l,i)=>
+    `<div class="bg-white p-3 rounded flex justify-between">${l}<button onclick="removeLazer(${i})">❌</button></div>`
+  ).join("")
+
+  document.getElementById('listaCompras').innerHTML = compras.map(c=>
+    `<div class="bg-white p-3 rounded border flex justify-between text-sm">
+      <span>${c.nome} (${c.categoria})</span>
+      <strong>R$ ${c.valorCompra}</strong>
+    </div>`
+  ).join("")
+
+  total.innerText = saldo.toLocaleString('pt-br',{style:'currency',currency:'BRL'})
+}
+
+render()
 </script>
 
 </body>
