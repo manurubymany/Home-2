@@ -43,20 +43,17 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
 
 <main class="max-w-5xl mx-auto p-4 space-y-6">
 
-<!-- TAREFAS -->
 <section id="content-casa" class="tab-content active">
   <h2 class="text-xl font-bold mb-3">Tarefas de <span id="view-name">Manu</span></h2>
   <div id="dias" class="flex gap-2 mb-4"></div>
   <div id="tarefas" class="space-y-3"></div>
 </section>
 
-<!-- LAZER -->
 <section id="content-lazer" class="tab-content space-y-3">
   <h2 class="text-xl font-bold">Lazer</h2>
   <div id="lazer"></div>
 </section>
 
-<!-- FINANCEIRO -->
 <section id="content-financeiro" class="tab-content space-y-4">
   <div class="grid grid-cols-2 gap-4">
     <div class="bg-indigo-600 text-white p-6 rounded-2xl">
@@ -77,20 +74,18 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
   <button onclick="addValor()" class="w-full bg-slate-900 text-white p-3 rounded-lg">Adicionar</button>
 </section>
 
-<!-- COMPRAS -->
 <section id="content-compras" class="tab-content space-y-2">
   <h2 class="text-xl font-bold">Compras</h2>
   <div id="compras"></div>
 </section>
 
-<!-- AGENDA -->
 <section id="content-agenda" class="tab-content space-y-4">
   <h2 class="text-xl font-bold">Agenda</h2>
 
-  <input id="agenda-data" type="date" class="w-full p-3 rounded bg-slate-100">
-  <input id="agenda-desc" type="text" placeholder="Compromisso" class="w-full p-3 rounded bg-slate-100">
+  <input id="agendaData" type="date" class="w-full p-3 rounded bg-slate-100">
+  <input id="agendaDesc" type="text" placeholder="Compromisso" class="w-full p-3 rounded bg-slate-100">
 
-  <select id="agenda-user" class="w-full p-3 rounded bg-slate-100">
+  <select id="agendaUser" class="w-full p-3 rounded bg-slate-100">
     <option value="Manu">Manu</option>
     <option value="Pedro">Pedro</option>
   </select>
@@ -107,10 +102,9 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
 <script>
 let user="Manu", dia="Segunda";
 let saldo={lazer:0,casa:0};
-
 const agenda=[];
 
-const tarefas={
+const tarefasData={
 "Segunda":[{t:"Varrer a casa",u:"Manu"},{t:"Passar pano",u:"Pedro"}],
 "Terça":[{t:"Lavar louça",u:"Manu"},{t:"Guardar louça",u:"Pedro"}],
 "Quarta":[{t:"Lavar roupa",u:"Manu"},{t:"Estender roupa",u:"Pedro"}],
@@ -118,13 +112,13 @@ const tarefas={
 "Sexta":[{t:"Trocar roupa de cama",u:"Manu"}]
 };
 
-const lazer=[
+const lazerData=[
 {n:"Cinema",v:70},{n:"Estação da Picanha",v:210},
 {n:"Night Dog",v:180},{n:"Cafés",v:90},
 {n:"Restaurante Japonês",v:240},{n:"Pastel da Sogra",v:150}
 ];
 
-const compras=[
+const comprasData=[
 "Arroz","Feijão","Café","Alho","Cebola","Leite","Macarrão",
 "Acém Moído","Patinho Bife","Colchão Duro (Panela)"
 ];
@@ -139,50 +133,65 @@ document.getElementById('nav-'+id).classList.add('active-nav');
 function switchUser(u){
 user=u;
 document.getElementById('view-name').innerText=u;
-btn-Manu.classList.toggle('bg-white',u==="Manu");
-btn-Pedro.classList.toggle('bg-white',u==="Pedro");
+document.getElementById('btn-Manu').classList.toggle('bg-white',u==="Manu");
+document.getElementById('btn-Pedro').classList.toggle('bg-white',u==="Pedro");
 render();
 }
 
 function addValor(){
-const v=Number(valor.value);
+const valorInput=document.getElementById('valor');
+const destinoSelect=document.getElementById('destino');
+const v=Number(valorInput.value);
 if(!v) return;
-saldo[destino.value]+=v;
-valor.value="";
+saldo[destinoSelect.value]+=v;
+valorInput.value="";
 render();
 }
 
 function addAgenda(){
-const d=agenda-data.value;
-const desc=agenda-desc.value;
-const u=agenda-user.value;
+const d=document.getElementById('agendaData').value;
+const desc=document.getElementById('agendaDesc').value;
+const u=document.getElementById('agendaUser').value;
 if(!d||!desc) return;
 agenda.push({d,desc,u});
-agenda-data.value="";
-agenda-desc.value="";
+document.getElementById('agendaData').value="";
+document.getElementById('agendaDesc').value="";
 render();
 }
 
 function render(){
-dias.innerHTML=Object.keys(tarefas).map(d=>
+const diasDiv=document.getElementById('dias');
+const tarefasDiv=document.getElementById('tarefas');
+const lazerDiv=document.getElementById('lazer');
+const comprasDiv=document.getElementById('compras');
+const agendaDiv=document.getElementById('agenda');
+
+diasDiv.innerHTML=Object.keys(tarefasData).map(d=>
 `<button onclick="dia='${d}';render()" class="px-3 py-1 bg-white border rounded">${d.slice(0,3)}</button>`
 ).join("");
 
-tarefas.innerHTML=(tarefas[dia]||[]).filter(t=>t.u===user)
-.map(t=>`<div class="bg-white p-3 rounded border">${t.t}</div>`).join("")||"Folga 🎉";
+tarefasDiv.innerHTML=(tarefasData[dia]||[])
+.filter(t=>t.u===user)
+.map(t=>`<div class="bg-white p-3 rounded border">${t.t}</div>`)
+.join("") || "Folga 🎉";
 
-lazer.innerHTML=lazer.map(l=>`<div class="bg-white p-3 rounded border">${l.n} — R$ ${l.v}</div>`).join("");
+lazerDiv.innerHTML=lazerData.map(l=>
+`<div class="bg-white p-3 rounded border">${l.n} — R$ ${l.v}</div>`
+).join("");
 
-compras.innerHTML=compras.map(c=>`<div class="bg-white p-2 rounded border">${c}</div>`).join("");
+comprasDiv.innerHTML=comprasData.map(c=>
+`<div class="bg-white p-2 rounded border">${c}</div>`
+).join("");
 
-agendaDiv=agenda.map(a=>`
+agendaDiv.innerHTML=agenda.map(a=>`
 <div class="bg-white p-3 rounded border text-sm">
-  <strong>${a.d}</strong> — ${a.desc} (${a.u})
+<strong>${a.d}</strong> — ${a.desc} (${a.u})
 </div>`).join("");
-agenda.innerHTML=agendaDiv;
 
-document.getElementById('total-lazer').innerText=saldo.lazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-document.getElementById('total-casa').innerText=saldo.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+document.getElementById('total-lazer').innerText=
+saldo.lazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+document.getElementById('total-casa').innerText=
+saldo.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
 }
 
 render();
