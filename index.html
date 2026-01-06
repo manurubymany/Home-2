@@ -3,16 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Organizador Pessoal PRO</title>
+<title>Organizador Manu & Pedro</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <style>
-    body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
-    .tab-content, .subtab-content { display:none }
-    .tab-content.active, .subtab-content.active { display:block; animation:slide .25s ease }
+    body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; color: #1E293B; }
+    .tab-content { display:none }
+    .tab-content.active { display:block; animation:slide .25s ease-out }
     .active-nav { border-bottom:3px solid #6366f1; color:#6366f1; font-weight:800 }
     .active-sub { background:#6366f1 !important; color:white !important }
-    @keyframes slide { from{opacity:0;transform:translateY(8px)} to{opacity:1} }
+    @keyframes slide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
@@ -20,142 +24,143 @@
 <header class="bg-white border-b sticky top-0 z-50 shadow-sm">
   <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">O</div>
-      <span class="font-bold text-lg">Organizador<span class="text-indigo-600">.</span></span>
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">H2</div>
+      <span class="font-bold text-lg">Home-2<span class="text-indigo-600">.</span></span>
     </div>
-    <div class="flex bg-slate-100 p-1 rounded-full text-xs font-semibold">
-      <button id="btn-Manu" onclick="switchUser('Manu')" class="px-4 py-1.5 rounded-full bg-white shadow text-indigo-600">Manu: <span id="score-Manu">0</span>pts</button>
-      <button id="btn-Pedro" onclick="switchUser('Pedro')" class="px-4 py-1.5 rounded-full text-slate-500">Pedro: <span id="score-Pedro">0</span>pts</button>
+    <div class="flex bg-slate-100 p-1 rounded-full text-[10px] font-bold">
+      <button id="btn-Manu" onclick="switchUser('Manu')" class="px-4 py-1.5 rounded-full transition-all">MANU</button>
+      <button id="btn-Pedro" onclick="switchUser('Pedro')" class="px-4 py-1.5 rounded-full transition-all">PEDRO</button>
     </div>
   </div>
-  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase overflow-x-auto">
+  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase overflow-x-auto no-scrollbar">
     <button id="nav-casa" onclick="showTab('casa')" class="py-3 active-nav">🏠 Tarefas</button>
     <button id="nav-lazer" onclick="showTab('lazer')" class="py-3 text-slate-400">🍷 Lazer</button>
-    <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Financeiro</button>
+    <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Finanças</button>
     <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
     <button id="nav-agenda" onclick="showTab('agenda')" class="py-3 text-slate-400">📅 Agenda</button>
-    <button id="nav-historico" onclick="showTab('historico')" class="py-3 text-slate-400">📜 Histórico</button>
   </nav>
 </header>
 
-<main class="max-w-5xl mx-auto p-4 space-y-8">
+<main class="max-w-5xl mx-auto p-4 space-y-6 pb-24">
 
-<section id="content-casa" class="tab-content active space-y-4">
-  <h2 class="text-xl font-bold">Tarefas de <span id="view-name">Manu</span></h2>
-  <div class="flex gap-2 overflow-x-auto pb-2" id="list-dias"></div>
-  <div class="bg-white p-4 rounded-xl border space-y-2">
-    <input id="novaTarefa" placeholder="Nova tarefa" class="w-full p-2 bg-slate-100 rounded">
-    <select id="tarefaUser" class="w-full p-2 bg-slate-100 rounded">
-      <option value="Manu">Manu</option>
-      <option value="Pedro">Pedro</option>
-    </select>
-    <button onclick="addTarefa()" class="w-full bg-indigo-600 text-white p-2 rounded">Cadastrar tarefa</button>
-  </div>
-  <div id="tarefasList" class="space-y-2"></div>
-</section>
-
-<section id="content-lazer" class="tab-content space-y-4">
-  <div class="flex justify-between items-center">
-    <h2 class="text-xl font-bold">Lazer</h2>
-    <button onclick="sortearLazerGlobal()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-amber-200">🎰 Sortear Qualquer Local</button>
-  </div>
-
-  <div class="flex gap-2 overflow-x-auto bg-slate-100 p-1 rounded-lg">
-    <button onclick="switchLazerCat('Bares')" id="btn-cat-Bares" class="lazer-cat-btn flex-1 py-2 text-[10px] font-bold rounded active-sub">BARES</button>
-    <button onclick="switchLazerCat('Cafés')" id="btn-cat-Cafés" class="lazer-cat-btn flex-1 py-2 text-[10px] font-bold rounded">CAFÉS</button>
-    <button onclick="switchLazerCat('Restaurantes')" id="btn-cat-Restaurantes" class="lazer-cat-btn flex-1 py-2 text-[10px] font-bold rounded">RESTAURANTES</button>
-    <button onclick="switchLazerCat('Cinemas')" id="btn-cat-Cinemas" class="lazer-cat-btn flex-1 py-2 text-[10px] font-bold rounded">CINEMAS</button>
-  </div>
-
-  <div class="bg-white p-4 rounded-xl border space-y-2">
-    <input id="lazerNome" placeholder="Lugar/Atividade" class="w-full p-2 bg-slate-100 rounded">
-    <input id="lazerValor" type="number" placeholder="Custo estimado" class="w-full p-2 bg-slate-100 rounded">
-    <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-2 rounded">Adicionar em <span id="active-cat-label">Bares</span></button>
-  </div>
-  <div id="lazerList" class="space-y-2"></div>
-</section>
-
-<section id="content-financeiro" class="tab-content space-y-4">
-  <div class="grid grid-cols-2 gap-4">
-    <div class="bg-indigo-600 text-white p-6 rounded-2xl"><p>Saldo Lazer</p><p class="text-2xl font-black" id="fin-lazer">R$ 0,00</p></div>
-    <div class="bg-emerald-500 text-white p-6 rounded-2xl"><p>Saldo Geral</p><p class="text-2xl font-black" id="fin-casa">R$ 0,00</p></div>
-  </div>
-  <div class="bg-white p-4 rounded-xl border space-y-2">
-    <input id="finValor" type="number" placeholder="Valor R$" class="w-full p-2 bg-slate-100 rounded">
-    <input id="finJust" type="text" placeholder="Justificativa" class="w-full p-2 bg-slate-100 rounded">
-    <select id="finDestino" class="w-full p-2 bg-slate-100 rounded">
-        <option value="lazer">Lazer</option>
-        <option value="casa">Geral</option>
-    </select>
-    <div class="flex gap-2">
-        <button onclick="addFinanceiro(1)" class="flex-1 bg-emerald-600 text-white p-2 rounded">Entrada (+)</button>
-        <button onclick="addFinanceiro(-1)" class="flex-1 bg-rose-600 text-white p-2 rounded">Baixa (-)</button>
+  <section id="content-casa" class="tab-content active space-y-4">
+    <div class="flex gap-2 overflow-x-auto pb-2" id="list-dias"></div>
+    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+      <input id="novaTarefa" placeholder="O que temos para hoje?" class="w-full p-3 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 text-sm">
+      <button onclick="addTarefa()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm shadow-md">Adicionar à Lista</button>
     </div>
-  </div>
-</section>
+    <div id="tarefasList" class="space-y-2"></div>
+  </section>
 
-<section id="content-compras" class="tab-content space-y-4">
-  <h2 class="text-xl font-bold">Lista de Compras</h2>
-  <div class="bg-white p-4 rounded-xl border space-y-2">
-    <input id="compraItem" placeholder="Produto" class="w-full p-2 bg-slate-100 rounded">
-    <button onclick="addCompra()" class="w-full bg-indigo-600 text-white p-2 rounded">Cadastrar</button>
-  </div>
-  <div id="comprasList" class="bg-white rounded-xl border divide-y"></div>
-</section>
+  <section id="content-lazer" class="tab-content space-y-4">
+    <button onclick="sortearLazerGlobal()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white p-5 rounded-2xl font-black shadow-lg uppercase tracking-wider text-sm">🎰 Sortear Qualquer Lugar</button>
+    
+    <div class="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
+      <button onclick="switchLazerCat('Bares')" id="lazer-Bares" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg active-sub">BARES</button>
+      <button onclick="switchLazerCat('Cafés')" id="lazer-Cafés" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg">CAFÉS</button>
+      <button onclick="switchLazerCat('Restaurantes')" id="lazer-Restaurantes" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg text-center leading-none">RESTAURANTES</button>
+      <button onclick="switchLazerCat('Cinemas')" id="lazer-Cinemas" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg">CINEMAS</button>
+    </div>
 
-<section id="content-agenda" class="tab-content space-y-4">
-  <h2 class="text-xl font-bold" id="calendar-title">Janeiro 2026</h2>
-  <div id="calendar" class="bg-white p-4 rounded-xl border">
-      <div class="grid grid-cols-7 text-center text-[10px] font-bold pb-2 border-b mb-2">
-          <span class="text-rose-500">DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
+    <div class="bg-white p-4 rounded-2xl border space-y-2 shadow-sm">
+      <input id="lazerNome" placeholder="Nome do lugar" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
+      <input id="lazerValor" type="number" placeholder="Custo médio R$" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
+      <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-2 rounded-lg font-bold text-xs uppercase">Salvar em <span id="label-cat">Bares</span></button>
+    </div>
+    <div id="lazerList" class="space-y-2"></div>
+  </section>
+
+  <section id="content-agenda" class="tab-content space-y-4">
+    <div class="bg-white p-5 rounded-2xl border shadow-sm">
+      <h2 id="calendar-title" class="text-center font-black text-indigo-600 mb-4 uppercase text-xs tracking-widest"></h2>
+      <div class="grid grid-cols-7 text-[8px] font-black text-slate-300 mb-2 text-center uppercase">
+          <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
       </div>
       <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
-  </div>
-  
-  <div class="bg-white p-4 rounded-xl border space-y-2">
-      <h3 class="text-xs font-black uppercase text-slate-400 mb-2">Novo Compromisso</h3>
-      <input id="ageData" type="date" class="w-full p-2 bg-slate-100 rounded text-sm">
-      <input id="ageDesc" placeholder="O que teremos?" class="w-full p-2 bg-slate-100 rounded text-sm">
-      <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-2 rounded font-bold">Agendar</button>
-  </div>
-
-  <div class="space-y-2">
-      <h3 class="text-xs font-black uppercase text-slate-400">Próximos Eventos</h3>
-      <div id="agendaList" class="space-y-2"></div>
-  </div>
-</section>
-
-<section id="content-historico" class="tab-content space-y-4">
-    <div class="flex gap-2 overflow-x-auto bg-slate-100 p-1 rounded-lg">
-        <button onclick="showSubTab('h-tarefas')" class="sub-btn flex-1 py-2 text-[10px] font-bold rounded active-sub">TAREFAS</button>
-        <button onclick="showSubTab('h-lazer')" class="sub-btn flex-1 py-2 text-[10px] font-bold rounded">LAZER</button>
-        <button onclick="showSubTab('h-compras')" class="sub-btn flex-1 py-2 text-[10px] font-bold rounded">COMPRAS</button>
-        <button onclick="showSubTab('h-fin')" class="sub-btn flex-1 py-2 text-[10px] font-bold rounded">FINANCEIRO</button>
     </div>
-    <div id="h-tarefas" class="subtab-content active space-y-2"></div>
-    <div id="h-lazer" class="subtab-content space-y-2"></div>
-    <div id="h-compras" class="subtab-content space-y-2"></div>
-    <div id="h-fin" class="subtab-content space-y-2"></div>
-</section>
+
+    <div class="bg-white p-4 rounded-2xl border space-y-2 shadow-sm">
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1">Novo Compromisso</p>
+      <input id="ageData" type="date" class="w-full p-2 bg-slate-50 rounded-lg border-none text-sm">
+      <input id="ageDesc" placeholder="O que vai acontecer?" class="w-full p-2 bg-slate-50 rounded-lg border-none text-sm">
+      <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm">Agendar</button>
+    </div>
+    <div id="agendaList" class="space-y-2"></div>
+  </section>
+
+  <section id="content-financeiro" class="tab-content space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+          <div class="bg-indigo-600 p-5 rounded-3xl text-white shadow-lg shadow-indigo-100">
+              <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Saldo Lazer</span>
+              <div id="fin-lazer" class="text-xl font-black mt-1">R$ 0,00</div>
+          </div>
+          <div class="bg-emerald-500 p-5 rounded-3xl text-white shadow-lg shadow-emerald-100">
+              <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Saldo Geral</span>
+              <div id="fin-casa" class="text-xl font-black mt-1">R$ 0,00</div>
+          </div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border space-y-3 shadow-sm">
+          <input id="finValor" type="number" placeholder="Valor R$" class="w-full p-3 bg-slate-50 rounded-xl border-none">
+          <input id="finJust" placeholder="Motivo / Descrição" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm">
+          <select id="finDestino" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm font-bold text-slate-600">
+              <option value="lazer">Lazer</option>
+              <option value="casa">Geral</option>
+          </select>
+          <div class="flex gap-2">
+              <button onclick="addFinanceiro(1)" class="flex-1 bg-emerald-600 text-white p-4 rounded-2xl font-black text-lg">+</button>
+              <button onclick="addFinanceiro(-1)" class="flex-1 bg-rose-600 text-white p-4 rounded-2xl font-black text-lg">-</button>
+          </div>
+      </div>
+  </section>
+
+  <section id="content-compras" class="tab-content space-y-4">
+      <div class="bg-white p-3 rounded-2xl border flex gap-2 shadow-sm">
+          <input id="compraItem" placeholder="Item que falta..." class="flex-1 p-2 bg-slate-50 rounded-xl border-none text-sm">
+          <button onclick="addCompra()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold text-xl shadow-md">+</button>
+      </div>
+      <div id="comprasList" class="bg-white rounded-2xl border divide-y shadow-sm overflow-hidden"></div>
+  </section>
 
 </main>
 
 <script>
+// CONFIGURAÇÃO REAL DO SEU FIREBASE HOME-2
+const firebaseConfig = {
+  apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo",
+  authDomain: "home-2-f8b01.firebaseapp.com",
+  databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com", // Link do seu 3º print
+  projectId: "home-2-f8b01",
+  storageBucket: "home-2-f8b01.firebasestorage.app",
+  messagingSenderId: "185628860546",
+  appId: "1:185628860546:web:51bd909007f8879e4e149b"
+};
+
+// INICIALIZAÇÃO
+firebase.initializeApp(firebaseConfig);
+const dbRef = firebase.database().ref('organizador_realtime');
+
 let currentUser = "Manu";
 let currentDay = "Segunda";
 let currentLazerCat = "Bares";
-
-let db = JSON.parse(localStorage.getItem('org_db')) || {
+let db = {
     scores: { Manu: 0, Pedro: 0 },
     tarefas: { "Segunda":[], "Terça":[], "Quarta":[], "Quinta":[], "Sexta":[], "Sábado":[], "Domingo":[] },
     lazer: [],
     financeiro: { lazer: 0, casa: 0 },
     compras: [],
-    agenda: [],
-    historico: { tarefas: [], lazer: [], compras: [], fin: [] }
+    agenda: []
 };
 
-function save() { localStorage.setItem('org_db', JSON.stringify(db)); render(); }
+// ESCUTA EM TEMPO REAL DO GOOGLE
+dbRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        db = data;
+        render();
+    }
+});
+
+function save() { dbRef.set(db); }
 
 function showTab(id) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -164,16 +169,8 @@ function showTab(id) {
     document.getElementById('nav-'+id).classList.add('active-nav');
 }
 
-function showSubTab(id) {
-    document.querySelectorAll('.subtab-content').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active-sub'));
-    event.target.classList.add('active-sub');
-}
-
 function switchUser(u) {
     currentUser = u;
-    document.getElementById('view-name').innerText = u;
     render();
 }
 
@@ -185,74 +182,36 @@ function switchLazerCat(cat) {
 // TAREFAS
 function addTarefa() {
     const t = document.getElementById('novaTarefa').value;
-    const u = document.getElementById('tarefaUser').value;
     if(!t) return;
-    db.tarefas[currentDay].push({id: Date.now(), t, u});
+    if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
+    db.tarefas[currentDay].push({id: Date.now(), t, u: currentUser});
     document.getElementById('novaTarefa').value = "";
     save();
 }
 
 function concluirTarefa(id, dia) {
     const idx = db.tarefas[dia].findIndex(x => x.id === id);
-    const item = db.tarefas[dia][idx];
-    db.scores[item.u] += 10;
-    db.historico.tarefas.push({...item, date: new Date().toLocaleDateString()});
+    db.scores[db.tarefas[dia][idx].u] += 10;
     db.tarefas[dia].splice(idx, 1);
     save();
 }
 
-function excluirTarefa(id, dia) {
-    const idx = db.tarefas[dia].findIndex(x => x.id === id);
-    db.tarefas[dia].splice(idx, 1);
-    save();
-}
-
-// COMPRAS
-function addCompra() {
-    const val = document.getElementById('compraItem').value;
-    if(!val) return;
-    db.compras.push({id: Date.now(), val});
-    document.getElementById('compraItem').value = "";
-    save();
-}
-
-function ticarCompra(id) {
-    const idx = db.compras.findIndex(x => x.id === id);
-    db.historico.compras.push({...db.compras[idx], date: new Date().toLocaleDateString()});
-    db.compras.splice(idx, 1);
-    save();
-}
-
-// FINANCEIRO
-function addFinanceiro(mult) {
-    const v = Number(document.getElementById('finValor').value) * mult;
-    const j = document.getElementById('finJust').value;
-    const d = document.getElementById('finDestino').value;
-    if(!v || !j) return;
-    db.financeiro[d] += v;
-    db.historico.fin.push({v, j, d, date: new Date().toLocaleDateString()});
-    document.getElementById('finValor').value = "";
-    document.getElementById('finJust').value = "";
-    save();
-}
-
-// LAZER
+// LAZER E SORTEIO
 function addLazer() {
     const n = document.getElementById('lazerNome').value;
     const v = document.getElementById('lazerValor').value;
     if(!n) return;
-    db.lazer.push({n, v, cat: currentLazerCat, id: Date.now()});
+    if(!db.lazer) db.lazer = [];
+    db.lazer.push({id: Date.now(), n, v, cat: currentLazerCat});
     document.getElementById('lazerNome').value = "";
     document.getElementById('lazerValor').value = "";
     save();
 }
 
 function sortearLazerGlobal() {
-    if(db.lazer.length === 0) return alert("Nenhum local cadastrado em nenhuma categoria!");
+    if(!db.lazer || db.lazer.length === 0) return alert("Adicione locais antes de sortear!");
     const sorteado = db.lazer[Math.floor(Math.random() * db.lazer.length)];
-    alert(`🎰 SORTEADO!\n\nLocal: ${sorteado.n}\nCategoria: ${sorteado.cat.toUpperCase()}\nPreço: R$ ${sorteado.v}`);
-    db.historico.lazer.push({...sorteado, date: new Date().toLocaleDateString()});
-    save();
+    alert(`🎰 LOCALIZADO!\n\n${sorteado.n}\nCategoria: ${sorteado.cat}\nEstimativa: R$ ${sorteado.v}`);
 }
 
 // AGENDA
@@ -260,6 +219,7 @@ function addAgenda() {
     const d = document.getElementById('ageData').value;
     const desc = document.getElementById('ageDesc').value;
     if(!d || !desc) return;
+    if(!db.agenda) db.agenda = [];
     db.agenda.push({id: Date.now(), d, desc, u: currentUser});
     document.getElementById('ageData').value = "";
     document.getElementById('ageDesc').value = "";
@@ -271,83 +231,101 @@ function excluirAgenda(id) {
     save();
 }
 
+// FINANÇAS E COMPRAS
+function addFinanceiro(m) {
+    const v = Number(document.getElementById('finValor').value) * m;
+    const d = document.getElementById('finDestino').value;
+    if(!v) return;
+    db.financeiro[d] += v;
+    save();
+}
+
+function addCompra() {
+    const val = document.getElementById('compraItem').value;
+    if(!val) return;
+    if(!db.compras) db.compras = [];
+    db.compras.push({id: Date.now(), val});
+    document.getElementById('compraItem').value = "";
+    save();
+}
+
 function render() {
-    document.getElementById('score-Manu').innerText = db.scores.Manu;
-    document.getElementById('score-Pedro').innerText = db.scores.Pedro;
-    
-    // Render Dias Tarefas
-    document.getElementById('list-dias').innerHTML = Object.keys(db.tarefas).map(d => 
-        `<button onclick="currentDay='${d}';render()" class="px-3 py-1 rounded-full text-[10px] font-bold ${currentDay===d?'bg-indigo-600 text-white':'bg-slate-200'}">${d.slice(0,3)}</button>`
-    ).join("");
+    // Nav Usuário
+    document.getElementById('btn-Manu').className = `px-4 py-1.5 rounded-full ${currentUser==='Manu'?'bg-white shadow text-indigo-600':'text-slate-400'}`;
+    document.getElementById('btn-Pedro').className = `px-4 py-1.5 rounded-full ${currentUser==='Pedro'?'bg-white shadow text-indigo-600':'text-slate-400'}`;
 
-    document.getElementById('tarefasList').innerHTML = db.tarefas[currentDay].map(t => `
-        <div class="bg-white p-3 rounded-lg border flex justify-between items-center ${t.u !== currentUser ? 'opacity-40' : ''}">
-            <span><small class="block text-[8px] font-bold text-indigo-500">${t.u}</small>${t.t}</span>
-            <div class="flex gap-2">
-                <button onclick="concluirTarefa(${t.id}, '${currentDay}')" class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold">✓</button>
-                <button onclick="excluirTarefa(${t.id}, '${currentDay}')" class="w-8 h-8 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center font-bold">✕</button>
+    // Dias Tarefas
+    const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+    document.getElementById('list-dias').innerHTML = dias.map(d => `
+        <button onclick="currentDay='${d}';render()" class="px-4 py-2 rounded-xl text-[9px] font-black transition-all ${currentDay===d?'bg-indigo-600 text-white shadow-lg':'bg-white border text-slate-400 uppercase'}">${d}</button>
+    `).join("");
+
+    document.getElementById('tarefasList').innerHTML = (db.tarefas[currentDay] || []).map(t => `
+        <div class="bg-white p-4 rounded-2xl border flex justify-between items-center shadow-sm">
+            <div>
+                <p class="text-[8px] font-black text-indigo-500 uppercase tracking-tighter">${t.u}</p>
+                <p class="font-bold text-slate-700 text-sm">${t.t}</p>
             </div>
-        </div>`).join("");
+            <button onclick="concluirTarefa(${t.id}, '${currentDay}')" class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center font-bold">✓</button>
+        </div>
+    `).join("");
 
-    // Render Lazer
+    // Categorias Lazer
     document.querySelectorAll('.lazer-cat-btn').forEach(b => b.classList.remove('active-sub'));
-    document.getElementById('btn-cat-' + currentLazerCat).classList.add('active-sub');
-    document.getElementById('active-cat-label').innerText = currentLazerCat;
-    document.getElementById('lazerList').innerHTML = db.lazer.filter(l => l.cat === currentLazerCat).map(l => `
-        <div class="bg-white p-3 rounded border flex justify-between items-center text-sm">
-            <span><b>${l.n}</b> <small class="text-slate-400">R$ ${l.v}</small></span>
-            <button onclick="db.lazer = db.lazer.filter(x=>x.id!==${l.id});save()" class="text-rose-500 font-bold">✕</button>
-        </div>`).join("");
+    document.getElementById('lazer-'+currentLazerCat).classList.add('active-sub');
+    document.getElementById('label-cat').innerText = currentLazerCat;
+    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(l => l.cat === currentLazerCat).map(l => `
+        <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+            <span class="text-slate-700 font-bold text-sm">${l.n} <small class="text-slate-400 font-normal ml-1">R$ ${l.v}</small></span>
+            <button onclick="db.lazer = db.lazer.filter(x=>x.id!==${l.id});save()" class="text-rose-400 font-bold px-2">✕</button>
+        </div>
+    `).join("");
 
-    // Render Calendário Inteligente
+    // Calendário Detalhado
     const now = new Date();
-    const month = now.getMonth();
-    const year = now.getFullYear();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    document.getElementById('calendar-title').innerText = now.toLocaleString('pt-br', {month:'long', year:'numeric'});
     
-    document.getElementById('calendar-title').innerText = now.toLocaleString('pt-br', { month: 'long', year: 'numeric' }).toUpperCase();
-    const grid = document.getElementById('calendar-grid');
-    grid.innerHTML = "";
-
-    for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+    let gridHtml = "";
+    for(let i=0; i<firstDay; i++) gridHtml += `<div></div>`;
     for(let i=1; i<=daysInMonth; i++) {
-        const fullDate = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-        const hasEvent = db.agenda.some(a => a.d === fullDate);
-        grid.innerHTML += `<div class="aspect-square border flex items-center justify-center text-[10px] rounded ${hasEvent?'bg-indigo-600 text-white font-bold':'bg-white text-slate-400'}">${i}</div>`;
+        const dStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+        const has = (db.agenda || []).some(a => a.d === dStr);
+        gridHtml += `<div class="aspect-square flex items-center justify-center text-[10px] rounded-lg ${has?'bg-indigo-600 text-white font-black':'text-slate-300 border border-slate-50'}">${i}</div>`;
     }
+    document.getElementById('calendar-grid').innerHTML = gridHtml;
 
-    // LISTA DE COMPROMISSOS NA ABA AGENDA
-    document.getElementById('agendaList').innerHTML = db.agenda.sort((a,b) => new Date(a.d) - new Date(b.d)).map(a => {
-        const dArr = a.d.split('-');
+    // Lista Agenda
+    document.getElementById('agendaList').innerHTML = (db.agenda || []).sort((a,b)=>new Date(a.d)-new Date(b.d)).map(a => {
+        const dPart = a.d.split('-');
         return `
-        <div class="bg-white p-3 rounded-lg border flex justify-between items-center">
+        <div class="bg-white p-3 rounded-2xl border flex justify-between items-center shadow-sm">
             <div class="flex items-center gap-3">
-                <div class="text-center bg-indigo-50 px-2 py-1 rounded border border-indigo-100">
-                    <span class="block text-[8px] font-black text-indigo-600 uppercase">${new Date(a.d).toLocaleString('pt-br', {month: 'short'})}</span>
-                    <span class="block text-sm font-black text-indigo-700">${dArr[2]}</span>
+                <div class="bg-indigo-50 px-2 py-1 rounded-lg text-center min-w-[40px]">
+                    <span class="block text-[7px] font-black text-indigo-400 uppercase">${new Date(a.d).toLocaleString('pt-br',{month:'short'})}</span>
+                    <span class="block text-sm font-black text-indigo-700">${dPart[2]}</span>
                 </div>
                 <div>
-                    <span class="block text-sm font-bold text-slate-700">${a.desc}</span>
-                    <span class="block text-[9px] text-slate-400 font-bold">Por: ${a.u}</span>
+                    <p class="font-bold text-slate-700 text-xs">${a.desc}</p>
+                    <p class="text-[7px] text-slate-400 font-black uppercase tracking-widest">Por: ${a.u}</p>
                 </div>
             </div>
-            <button onclick="excluirAgenda(${a.id})" class="w-8 h-8 bg-slate-50 text-rose-500 rounded-lg flex items-center justify-center border hover:bg-rose-50">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-            </button>
-        </div>`}).join("");
+            <button onclick="excluirAgenda(${a.id})" class="text-rose-400 text-[9px] font-black border border-rose-100 px-2 py-1 rounded-lg">CANCELAR</button>
+        </div>`
+    }).join("");
 
-    // Outras Renderizações
-    document.getElementById('comprasList').innerHTML = db.compras.map(c => `<div class="p-3 flex items-center gap-3"><input type="checkbox" onchange="ticarCompra(${c.id})" class="w-5 h-5"><span>${c.val}</span></div>`).join("");
-    document.getElementById('fin-lazer').innerText = db.financeiro.lazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    document.getElementById('fin-casa').innerText = db.financeiro.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    
-    document.getElementById('h-tarefas').innerHTML = db.historico.tarefas.map(h => `<div class="text-[10px] p-2 bg-white border rounded">✅ <b>${h.date}</b>: ${h.t} (${h.u})</div>`).reverse().join("");
-    document.getElementById('h-lazer').innerHTML = db.historico.lazer.map(h => `<div class="text-[10px] p-2 bg-white border rounded">🍷 <b>${h.date}</b>: ${h.n} (${h.cat})</div>`).reverse().join("");
-    document.getElementById('h-compras').innerHTML = db.historico.compras.map(h => `<div class="text-[10px] p-2 bg-white border rounded">🛒 <b>${h.date}</b>: ${h.val}</div>`).reverse().join("");
-    document.getElementById('h-fin').innerHTML = db.historico.fin.map(h => `<div class="text-[10px] p-2 bg-white border rounded">💰 <b>${h.date}</b>: R$ ${Math.abs(h.v)} (${h.j})</div>`).reverse().join("");
+    // Finanças e Compras
+    document.getElementById('fin-lazer').innerText = (db.financeiro.lazer || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+    document.getElementById('fin-casa').innerText = (db.financeiro.casa || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+    document.getElementById('comprasList').innerHTML = (db.compras || []).map(c => `
+        <div class="p-4 flex items-center justify-between bg-white">
+            <div class="flex items-center gap-3">
+                <input type="checkbox" onchange="db.compras=db.compras.filter(x=>x.id!==${c.id});save()" class="w-5 h-5 rounded-lg border-slate-200 text-indigo-600">
+                <span class="text-slate-700 font-bold text-sm">${c.val}</span>
+            </div>
+        </div>
+    `).join("");
 }
 
 render();
