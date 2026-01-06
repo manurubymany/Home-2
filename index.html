@@ -57,7 +57,7 @@
 <section id="content-lazer" class="tab-content space-y-4">
   <div class="flex justify-between items-center">
     <h2 class="text-xl font-bold">Lazer</h2>
-    <button onclick="sortearLazer()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-bold">🎰 Sortear Local</button>
+    <button onclick="sortearLazerGlobal()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-amber-200">🎰 Sortear Qualquer Local</button>
   </div>
 
   <div class="flex gap-2 overflow-x-auto bg-slate-100 p-1 rounded-lg">
@@ -70,7 +70,7 @@
   <div class="bg-white p-4 rounded-xl border space-y-2">
     <input id="lazerNome" placeholder="Lugar/Atividade" class="w-full p-2 bg-slate-100 rounded">
     <input id="lazerValor" type="number" placeholder="Custo estimado" class="w-full p-2 bg-slate-100 rounded">
-    <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-2 rounded">Adicionar à Lista (<span id="active-cat-label">Bares</span>)</button>
+    <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-2 rounded">Adicionar em <span id="active-cat-label">Bares</span></button>
   </div>
   <div id="lazerList" class="space-y-2"></div>
 </section>
@@ -104,17 +104,24 @@
 </section>
 
 <section id="content-agenda" class="tab-content space-y-4">
-  <h2 class="text-xl font-bold" id="calendar-title">Calendário</h2>
+  <h2 class="text-xl font-bold" id="calendar-title">Janeiro 2026</h2>
   <div id="calendar" class="bg-white p-4 rounded-xl border">
       <div class="grid grid-cols-7 text-center text-[10px] font-bold pb-2 border-b mb-2">
           <span class="text-rose-500">DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
       </div>
       <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
   </div>
+  
   <div class="bg-white p-4 rounded-xl border space-y-2">
-      <input id="ageData" type="date" class="w-full p-2 bg-slate-100 rounded">
-      <input id="ageDesc" placeholder="Evento" class="w-full p-2 bg-slate-100 rounded">
-      <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-2 rounded">Agendar</button>
+      <h3 class="text-xs font-black uppercase text-slate-400 mb-2">Novo Compromisso</h3>
+      <input id="ageData" type="date" class="w-full p-2 bg-slate-100 rounded text-sm">
+      <input id="ageDesc" placeholder="O que teremos?" class="w-full p-2 bg-slate-100 rounded text-sm">
+      <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-2 rounded font-bold">Agendar</button>
+  </div>
+
+  <div class="space-y-2">
+      <h3 class="text-xs font-black uppercase text-slate-400">Próximos Eventos</h3>
+      <div id="agendaList" class="space-y-2"></div>
   </div>
 </section>
 
@@ -180,7 +187,7 @@ function addTarefa() {
     const t = document.getElementById('novaTarefa').value;
     const u = document.getElementById('tarefaUser').value;
     if(!t) return;
-    db.tarefas[currentDay].push({id: Date.now(), t, u, done: false});
+    db.tarefas[currentDay].push({id: Date.now(), t, u});
     document.getElementById('novaTarefa').value = "";
     save();
 }
@@ -240,11 +247,10 @@ function addLazer() {
     save();
 }
 
-function sortearLazer() {
-    const listaCat = db.lazer.filter(l => l.cat === currentLazerCat);
-    if(listaCat.length === 0) return alert("Adicione locais nesta categoria primeiro!");
-    const sorteado = listaCat[Math.floor(Math.random() * listaCat.length)];
-    alert(`🎰 SORTEADO (${currentLazerCat.toUpperCase()}): ${sorteado.n}`);
+function sortearLazerGlobal() {
+    if(db.lazer.length === 0) return alert("Nenhum local cadastrado em nenhuma categoria!");
+    const sorteado = db.lazer[Math.floor(Math.random() * db.lazer.length)];
+    alert(`🎰 SORTEADO!\n\nLocal: ${sorteado.n}\nCategoria: ${sorteado.cat.toUpperCase()}\nPreço: R$ ${sorteado.v}`);
     db.historico.lazer.push({...sorteado, date: new Date().toLocaleDateString()});
     save();
 }
@@ -254,7 +260,14 @@ function addAgenda() {
     const d = document.getElementById('ageData').value;
     const desc = document.getElementById('ageDesc').value;
     if(!d || !desc) return;
-    db.agenda.push({d, desc, u: currentUser});
+    db.agenda.push({id: Date.now(), d, desc, u: currentUser});
+    document.getElementById('ageData').value = "";
+    document.getElementById('ageDesc').value = "";
+    save();
+}
+
+function excluirAgenda(id) {
+    db.agenda = db.agenda.filter(a => a.id !== id);
     save();
 }
 
@@ -304,7 +317,29 @@ function render() {
         grid.innerHTML += `<div class="aspect-square border flex items-center justify-center text-[10px] rounded ${hasEvent?'bg-indigo-600 text-white font-bold':'bg-white text-slate-400'}">${i}</div>`;
     }
 
-    // Render Compras, Financeiro e Histórico
+    // LISTA DE COMPROMISSOS NA ABA AGENDA
+    document.getElementById('agendaList').innerHTML = db.agenda.sort((a,b) => new Date(a.d) - new Date(b.d)).map(a => {
+        const dArr = a.d.split('-');
+        return `
+        <div class="bg-white p-3 rounded-lg border flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="text-center bg-indigo-50 px-2 py-1 rounded border border-indigo-100">
+                    <span class="block text-[8px] font-black text-indigo-600 uppercase">${new Date(a.d).toLocaleString('pt-br', {month: 'short'})}</span>
+                    <span class="block text-sm font-black text-indigo-700">${dArr[2]}</span>
+                </div>
+                <div>
+                    <span class="block text-sm font-bold text-slate-700">${a.desc}</span>
+                    <span class="block text-[9px] text-slate-400 font-bold">Por: ${a.u}</span>
+                </div>
+            </div>
+            <button onclick="excluirAgenda(${a.id})" class="w-8 h-8 bg-slate-50 text-rose-500 rounded-lg flex items-center justify-center border hover:bg-rose-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>`}).join("");
+
+    // Outras Renderizações
     document.getElementById('comprasList').innerHTML = db.compras.map(c => `<div class="p-3 flex items-center gap-3"><input type="checkbox" onchange="ticarCompra(${c.id})" class="w-5 h-5"><span>${c.val}</span></div>`).join("");
     document.getElementById('fin-lazer').innerText = db.financeiro.lazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
     document.getElementById('fin-casa').innerText = db.financeiro.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
