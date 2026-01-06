@@ -11,16 +11,20 @@
 <style>
 body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
 .tab-content{display:none}
-.tab-content.active{display:block}
+.tab-content.active{display:block;animation:slide .25s ease}
 .active-nav{border-bottom:3px solid #6366f1;color:#6366f1;font-weight:800}
+@keyframes slide{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
 </style>
 </head>
 
 <body>
 
-<header class="bg-white border-b sticky top-0 shadow-sm">
+<header class="bg-white border-b sticky top-0 z-50 shadow-sm">
   <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
-    <span class="font-bold text-lg">Organizador<span class="text-indigo-600">.</span></span>
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">O</div>
+      <span class="font-bold text-lg">Organizador<span class="text-indigo-600">.</span></span>
+    </div>
 
     <div class="flex bg-slate-100 p-1 rounded-full text-xs font-semibold">
       <button id="btn-Manu" onclick="switchUser('Manu')" class="px-4 py-1.5 rounded-full bg-white shadow text-indigo-600">Manu</button>
@@ -28,26 +32,49 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
     </div>
   </div>
 
-  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase">
-    <button id="nav-tarefas" onclick="showTab('tarefas')" class="py-3 active-nav">🧹 Tarefas</button>
+  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase overflow-x-auto">
+    <button id="nav-casa" onclick="showTab('casa')" class="py-3 active-nav">🏠 Tarefas</button>
     <button id="nav-lazer" onclick="showTab('lazer')" class="py-3 text-slate-400">🍷 Lazer</button>
-    <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
     <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Financeiro</button>
+    <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
+    <button id="nav-agenda" onclick="showTab('agenda')" class="py-3 text-slate-400">📅 Agenda</button>
   </nav>
 </header>
 
 <main class="max-w-5xl mx-auto p-4 space-y-6">
 
 <!-- TAREFAS -->
-<section id="content-tarefas" class="tab-content active">
-  <h2 class="text-xl font-bold mb-3">Tarefas de <span id="view-user">Manu</span></h2>
-  <div id="tarefas" class="space-y-2"></div>
+<section id="content-casa" class="tab-content active">
+  <h2 class="text-xl font-bold mb-3">Tarefas de <span id="view-name">Manu</span></h2>
+  <div id="dias" class="flex gap-2 mb-4"></div>
+  <div id="tarefas" class="space-y-3"></div>
 </section>
 
 <!-- LAZER -->
-<section id="content-lazer" class="tab-content space-y-2">
+<section id="content-lazer" class="tab-content space-y-3">
   <h2 class="text-xl font-bold">Lazer</h2>
   <div id="lazer"></div>
+</section>
+
+<!-- FINANCEIRO -->
+<section id="content-financeiro" class="tab-content space-y-4">
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-indigo-600 text-white p-6 rounded-2xl">
+      <p>Lazer</p>
+      <p class="text-2xl font-black" id="total-lazer">R$ 0,00</p>
+    </div>
+    <div class="bg-emerald-500 text-white p-6 rounded-2xl">
+      <p>Casa</p>
+      <p class="text-2xl font-black" id="total-casa">R$ 0,00</p>
+    </div>
+  </div>
+
+  <input id="valor" type="number" placeholder="Valor" class="w-full p-3 rounded bg-slate-100">
+  <select id="destino" class="w-full p-3 rounded bg-slate-100">
+    <option value="lazer">Lazer</option>
+    <option value="casa">Casa</option>
+  </select>
+  <button onclick="addValor()" class="w-full bg-slate-900 text-white p-3 rounded-lg">Adicionar</button>
 </section>
 
 <!-- COMPRAS -->
@@ -56,78 +83,109 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; }
   <div id="compras"></div>
 </section>
 
-<!-- FINANCEIRO -->
-<section id="content-financeiro" class="tab-content space-y-4">
-  <h2 class="text-xl font-bold">Financeiro</h2>
-  <p class="text-2xl font-black" id="total">R$ 0,00</p>
+<!-- AGENDA -->
+<section id="content-agenda" class="tab-content space-y-4">
+  <h2 class="text-xl font-bold">Agenda</h2>
+
+  <input id="agenda-data" type="date" class="w-full p-3 rounded bg-slate-100">
+  <input id="agenda-desc" type="text" placeholder="Compromisso" class="w-full p-3 rounded bg-slate-100">
+
+  <select id="agenda-user" class="w-full p-3 rounded bg-slate-100">
+    <option value="Manu">Manu</option>
+    <option value="Pedro">Pedro</option>
+  </select>
+
+  <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-3 rounded-lg">
+    Adicionar compromisso
+  </button>
+
+  <div id="agenda" class="space-y-2"></div>
 </section>
 
 </main>
 
 <script>
-let user = "Manu"
+let user="Manu", dia="Segunda";
+let saldo={lazer:0,casa:0};
 
-const tarefas = [
-  { nome:"Varrer a casa", user:"Manu" },
-  { nome:"Passar pano na casa", user:"Pedro" },
-  { nome:"Lavar a louça", user:"Manu" },
-  { nome:"Guardar a louça", user:"Pedro" },
-  { nome:"Lavar roupa", user:"Manu" },
-  { nome:"Estender roupa", user:"Pedro" },
-  { nome:"Recolher a roupa do varal", user:"Manu" },
-  { nome:"Tirar poeira dos móveis", user:"Pedro" },
-  { nome:"Trocar roupa de cama", user:"Manu" }
-]
+const agenda=[];
 
-const lazer = [
-  { nome:"Cinema", valor:70 },
-  { nome:"Estação da Picanha", valor:210 },
-  { nome:"Night Dog", valor:180 },
-  { nome:"Cafés", valor:90 },
-  { nome:"Restaurante Japonês", valor:240 },
-  { nome:"Pastel da Sogra", valor:150 }
-]
+const tarefas={
+"Segunda":[{t:"Varrer a casa",u:"Manu"},{t:"Passar pano",u:"Pedro"}],
+"Terça":[{t:"Lavar louça",u:"Manu"},{t:"Guardar louça",u:"Pedro"}],
+"Quarta":[{t:"Lavar roupa",u:"Manu"},{t:"Estender roupa",u:"Pedro"}],
+"Quinta":[{t:"Recolher roupa",u:"Manu"},{t:"Tirar poeira",u:"Pedro"}],
+"Sexta":[{t:"Trocar roupa de cama",u:"Manu"}]
+};
 
-const compras = [
-  "Arroz","Feijão","Café","Alho","Cebola","Leite","Macarrão",
-  "Acém Moído","Patinho Bife","Colchão Duro (Panela)"
-]
+const lazer=[
+{n:"Cinema",v:70},{n:"Estação da Picanha",v:210},
+{n:"Night Dog",v:180},{n:"Cafés",v:90},
+{n:"Restaurante Japonês",v:240},{n:"Pastel da Sogra",v:150}
+];
+
+const compras=[
+"Arroz","Feijão","Café","Alho","Cebola","Leite","Macarrão",
+"Acém Moído","Patinho Bife","Colchão Duro (Panela)"
+];
 
 function showTab(id){
-  document.querySelectorAll('.tab-content').forEach(s=>s.classList.remove('active'))
-  document.getElementById('content-'+id).classList.add('active')
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav','text-indigo-600'))
-  document.getElementById('nav-'+id).classList.add('active-nav','text-indigo-600')
+document.querySelectorAll('.tab-content').forEach(s=>s.classList.remove('active'));
+document.getElementById('content-'+id).classList.add('active');
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav'));
+document.getElementById('nav-'+id).classList.add('active-nav');
 }
 
 function switchUser(u){
-  user = u
-  document.getElementById('view-user').innerText = u
-  document.getElementById('btn-Manu').classList.toggle('bg-white',u==="Manu")
-  document.getElementById('btn-Pedro').classList.toggle('bg-white',u==="Pedro")
-  render()
+user=u;
+document.getElementById('view-name').innerText=u;
+btn-Manu.classList.toggle('bg-white',u==="Manu");
+btn-Pedro.classList.toggle('bg-white',u==="Pedro");
+render();
+}
+
+function addValor(){
+const v=Number(valor.value);
+if(!v) return;
+saldo[destino.value]+=v;
+valor.value="";
+render();
+}
+
+function addAgenda(){
+const d=agenda-data.value;
+const desc=agenda-desc.value;
+const u=agenda-user.value;
+if(!d||!desc) return;
+agenda.push({d,desc,u});
+agenda-data.value="";
+agenda-desc.value="";
+render();
 }
 
 function render(){
-  document.getElementById('tarefas').innerHTML =
-    tarefas.filter(t=>t.user===user).map((t,i)=>`
-      <div class="bg-white p-3 rounded flex justify-between">
-        <span>${t.nome}</span>
-        <button onclick="tarefas.splice(${i},1);render()">✅</button>
-      </div>`).join("") || "Sem tarefas 🎉"
+dias.innerHTML=Object.keys(tarefas).map(d=>
+`<button onclick="dia='${d}';render()" class="px-3 py-1 bg-white border rounded">${d.slice(0,3)}</button>`
+).join("");
 
-  document.getElementById('lazer').innerHTML =
-    lazer.map(l=>`<div class="bg-white p-2 rounded border">${l.nome} — R$ ${l.valor}</div>`).join("")
+tarefas.innerHTML=(tarefas[dia]||[]).filter(t=>t.u===user)
+.map(t=>`<div class="bg-white p-3 rounded border">${t.t}</div>`).join("")||"Folga 🎉";
 
-  document.getElementById('compras').innerHTML =
-    compras.map(c=>`<div class="bg-white p-2 rounded border">${c}</div>`).join("")
+lazer.innerHTML=lazer.map(l=>`<div class="bg-white p-3 rounded border">${l.n} — R$ ${l.v}</div>`).join("");
 
-  const total = lazer.reduce((s,l)=>s+l.valor,0)
-  document.getElementById('total').innerText =
-    total.toLocaleString('pt-br',{style:'currency',currency:'BRL'})
+compras.innerHTML=compras.map(c=>`<div class="bg-white p-2 rounded border">${c}</div>`).join("");
+
+agendaDiv=agenda.map(a=>`
+<div class="bg-white p-3 rounded border text-sm">
+  <strong>${a.d}</strong> — ${a.desc} (${a.u})
+</div>`).join("");
+agenda.innerHTML=agendaDiv;
+
+document.getElementById('total-lazer').innerText=saldo.lazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+document.getElementById('total-casa').innerText=saldo.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
 }
 
-render()
+render();
 </script>
 
 </body>
