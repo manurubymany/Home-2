@@ -3,165 +3,226 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Organizador Manu & Pedro</title>
+<title>Planner Yourself</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <style>
-    body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; color: #1E293B; }
+    body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; color: #1E293B; overflow-x: hidden; }
     .tab-content { display:none }
     .tab-content.active { display:block; animation:slide .25s ease-out }
     .active-nav { border-bottom:3px solid #6366f1; color:#6366f1; font-weight:800 }
     .active-sub { background:#6366f1 !important; color:white !important }
     @keyframes slide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .active-user-btn { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    .calendar-day.today { background: #6366f1; color: white; border-radius: 50%; font-weight: 800; }
 </style>
 </head>
 <body>
 
 <header class="bg-white border-b sticky top-0 z-50 shadow-sm">
-  <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">H2</div>
-      <span class="font-bold text-lg">Home-2<span class="text-indigo-600">.</span></span>
+  <div class="max-w-5xl mx-auto px-4 pt-4 pb-2">
+    <div class="flex justify-between items-center mb-3">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">PY</div>
+            <span class="font-bold text-lg tracking-tighter">Planner <span class="text-indigo-600">Yourself.</span></span>
+        </div>
+        <div class="flex bg-slate-100 p-1 rounded-full text-[10px] font-bold">
+            <button id="btn-user1" onclick="switchUser(db.config.user1)" class="px-4 py-1.5 rounded-full transition-all uppercase"></button>
+            <button id="btn-user2" onclick="switchUser(db.config.user2)" class="px-4 py-1.5 rounded-full transition-all uppercase"></button>
+        </div>
     </div>
-    <div class="flex bg-slate-100 p-1 rounded-full text-[10px] font-bold">
-      <button id="btn-Manu" onclick="switchUser('Manu')" class="px-4 py-1.5 rounded-full transition-all">MANU</button>
-      <button id="btn-Pedro" onclick="switchUser('Pedro')" class="px-4 py-1.5 rounded-full transition-all">PEDRO</button>
+    
+    <div class="flex justify-around bg-indigo-50/50 rounded-2xl py-2 mb-2 border border-indigo-100">
+        <div class="text-center">
+            <p id="score-name1" class="text-[7px] font-black text-slate-400 uppercase mb-1 leading-tight"></p>
+            <p id="score-val1" class="text-xs font-black text-indigo-600">0 pts</p>
+        </div>
+        <div class="w-px bg-indigo-100 h-6 my-auto"></div>
+        <div class="text-center">
+            <p id="score-name2" class="text-[7px] font-black text-slate-400 uppercase mb-1 leading-tight"></p>
+            <p id="score-val2" class="text-xs font-black text-indigo-600">0 pts</p>
+        </div>
     </div>
+
+    <nav class="flex gap-4 text-[10px] font-black uppercase overflow-x-auto no-scrollbar">
+        <button id="nav-casa" onclick="showTab('casa')" class="py-3 active-nav">🏠 Tarefas</button>
+        <button id="nav-lazer" onclick="showTab('lazer')" class="py-3 text-slate-400">🍷 Lazer</button>
+        <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Finanças</button>
+        <button id="nav-historico" onclick="showTab('historico')" class="py-3 text-slate-400">📜 Histórico</button>
+        <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
+        <button id="nav-agenda" onclick="showTab('agenda')" class="py-3 text-slate-400">📅 Agenda</button>
+        <button id="nav-perfil" onclick="showTab('perfil')" class="py-3 text-slate-400">👤 Perfil</button>
+    </nav>
   </div>
-  <nav class="max-w-5xl mx-auto px-4 flex gap-4 text-[10px] font-black uppercase overflow-x-auto no-scrollbar">
-    <button id="nav-casa" onclick="showTab('casa')" class="py-3 active-nav">🏠 Tarefas</button>
-    <button id="nav-lazer" onclick="showTab('lazer')" class="py-3 text-slate-400">🍷 Lazer</button>
-    <button id="nav-financeiro" onclick="showTab('financeiro')" class="py-3 text-slate-400">💰 Finanças</button>
-    <button id="nav-compras" onclick="showTab('compras')" class="py-3 text-slate-400">🛒 Compras</button>
-    <button id="nav-agenda" onclick="showTab('agenda')" class="py-3 text-slate-400">📅 Agenda</button>
-  </nav>
 </header>
 
 <main class="max-w-5xl mx-auto p-4 space-y-6 pb-24">
-
   <section id="content-casa" class="tab-content active space-y-4">
-    <div class="flex gap-2 overflow-x-auto pb-2" id="list-dias"></div>
+    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="list-dias"></div>
     <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-      <input id="novaTarefa" placeholder="O que temos para hoje?" class="w-full p-3 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 text-sm">
+      <input id="novaTarefa" placeholder="O que temos para hoje?" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm">
       <button onclick="addTarefa()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm shadow-md">Adicionar à Lista</button>
     </div>
     <div id="tarefasList" class="space-y-2"></div>
   </section>
 
-  <section id="content-lazer" class="tab-content space-y-4">
-    <button onclick="sortearLazerGlobal()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white p-5 rounded-2xl font-black shadow-lg uppercase tracking-wider text-sm">🎰 Sortear Qualquer Lugar</button>
-    
-    <div class="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
-      <button onclick="switchLazerCat('Bares')" id="lazer-Bares" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg active-sub">BARES</button>
-      <button onclick="switchLazerCat('Cafés')" id="lazer-Cafés" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg">CAFÉS</button>
-      <button onclick="switchLazerCat('Restaurantes')" id="lazer-Restaurantes" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg text-center leading-none">RESTAURANTES</button>
-      <button onclick="switchLazerCat('Cinemas')" id="lazer-Cinemas" class="lazer-cat-btn flex-1 py-2 text-[9px] font-bold rounded-lg">CINEMAS</button>
-    </div>
-
-    <div class="bg-white p-4 rounded-2xl border space-y-2 shadow-sm">
-      <input id="lazerNome" placeholder="Nome do lugar" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
-      <input id="lazerValor" type="number" placeholder="Custo médio R$" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
-      <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-2 rounded-lg font-bold text-xs uppercase">Salvar em <span id="label-cat">Bares</span></button>
-    </div>
-    <div id="lazerList" class="space-y-2"></div>
-  </section>
-
-  <section id="content-agenda" class="tab-content space-y-4">
-    <div class="bg-white p-5 rounded-2xl border shadow-sm">
-      <h2 id="calendar-title" class="text-center font-black text-indigo-600 mb-4 uppercase text-xs tracking-widest"></h2>
-      <div class="grid grid-cols-7 text-[8px] font-black text-slate-300 mb-2 text-center uppercase">
-          <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
-      </div>
-      <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
-    </div>
-
-    <div class="bg-white p-4 rounded-2xl border space-y-2 shadow-sm">
-      <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1">Novo Compromisso</p>
-      <input id="ageData" type="date" class="w-full p-2 bg-slate-50 rounded-lg border-none text-sm">
-      <input id="ageDesc" placeholder="O que vai acontecer?" class="w-full p-2 bg-slate-50 rounded-lg border-none text-sm">
-      <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm">Agendar</button>
-    </div>
-    <div id="agendaList" class="space-y-2"></div>
-  </section>
-
   <section id="content-financeiro" class="tab-content space-y-4">
       <div class="grid grid-cols-2 gap-3">
-          <div class="bg-indigo-600 p-5 rounded-3xl text-white shadow-lg shadow-indigo-100">
-              <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Saldo Lazer</span>
-              <div id="fin-lazer" class="text-xl font-black mt-1">R$ 0,00</div>
+          <div class="bg-indigo-600 p-4 rounded-3xl text-white shadow-lg">
+              <span class="text-[8px] font-bold opacity-70 uppercase">Saldo Salário</span>
+              <div id="fin-salario-res" class="text-lg font-black mt-1">R$ 0,00</div>
           </div>
-          <div class="bg-emerald-500 p-5 rounded-3xl text-white shadow-lg shadow-emerald-100">
-              <span class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Saldo Geral</span>
-              <div id="fin-casa" class="text-xl font-black mt-1">R$ 0,00</div>
+          <div class="bg-emerald-500 p-4 rounded-3xl text-white shadow-lg">
+              <span class="text-[8px] font-bold opacity-70 uppercase">Saldo VR/VA</span>
+              <div id="fin-vrava-res" class="text-lg font-black mt-1">R$ 0,00</div>
           </div>
       </div>
+
+      <div class="bg-white p-4 rounded-3xl border shadow-sm space-y-4">
+          <p class="text-[10px] font-black text-slate-400 uppercase text-center">Saúde Financeira</p>
+          <div class="space-y-3">
+              <div>
+                  <div class="flex justify-between text-[9px] font-bold mb-1"><span>SALÁRIO USADO</span><span id="perc-sal">0%</span></div>
+                  <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="bar-sal" class="bg-indigo-500 h-full transition-all" style="width:0%"></div></div>
+              </div>
+              <div>
+                  <div class="flex justify-between text-[9px] font-bold mb-1"><span>BENEFÍCIOS USADOS</span><span id="perc-ben">0%</span></div>
+                  <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="bar-ben" class="bg-emerald-500 h-full transition-all" style="width:0%"></div></div>
+              </div>
+          </div>
+      </div>
+
       <div class="bg-white p-4 rounded-2xl border space-y-3 shadow-sm">
           <input id="finValor" type="number" placeholder="Valor R$" class="w-full p-3 bg-slate-50 rounded-xl border-none">
-          <input id="finJust" placeholder="Motivo / Descrição" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm">
+          <input id="finJust" placeholder="Motivo / Justificativa" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm">
           <select id="finDestino" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm font-bold text-slate-600">
-              <option value="lazer">Lazer</option>
-              <option value="casa">Geral</option>
+              <option value="salario">Receber Salário (+)</option>
+              <option value="vrava">Receber VR/VA (+)</option>
+              <option value="fixo_alim">Gasto: Alimentação (Usa VR/VA)</option>
+              <option value="fixo_net">Gasto: Internet (Usa Salário)</option>
+              <option value="fixo_cel">Gasto: Celular (Usa Salário)</option>
+              <option value="fixo_card">Gasto: Cartão (Usa Salário)</option>
+              <option value="lazer">Gasto: Lazer (Usa Salário)</option>
+              <option value="casa">Reserva: Nossa Casa (Usa Salário)</option>
           </select>
           <div class="flex gap-2">
-              <button onclick="addFinanceiro(1)" class="flex-1 bg-emerald-600 text-white p-4 rounded-2xl font-black text-lg">+</button>
+              <button onclick="addFinanceiro(1)" class="flex-1 bg-indigo-600 text-white p-4 rounded-2xl font-black text-lg">+</button>
               <button onclick="addFinanceiro(-1)" class="flex-1 bg-rose-600 text-white p-4 rounded-2xl font-black text-lg">-</button>
           </div>
       </div>
   </section>
 
-  <section id="content-compras" class="tab-content space-y-4">
-      <div class="bg-white p-3 rounded-2xl border flex gap-2 shadow-sm">
-          <input id="compraItem" placeholder="Item que falta..." class="flex-1 p-2 bg-slate-50 rounded-xl border-none text-sm">
-          <button onclick="addCompra()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold text-xl shadow-md">+</button>
-      </div>
-      <div id="comprasList" class="bg-white rounded-2xl border divide-y shadow-sm overflow-hidden"></div>
+  <section id="content-lazer" class="tab-content space-y-4">
+    <button onclick="sortearLazerGlobal()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white p-5 rounded-2xl font-black shadow-lg text-sm uppercase">🎰 Sortear Qualquer Lugar</button>
+    <div class="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto no-scrollbar" id="lazer-tabs"></div>
+    <div class="bg-white p-4 rounded-2xl border space-y-2 shadow-sm">
+      <input id="lazerNome" placeholder="Nome do lugar" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
+      <input id="lazerValor" type="number" placeholder="Custo médio R$" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
+      <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-2 rounded-lg font-bold text-xs uppercase">Salvar</button>
+    </div>
+    <div id="lazerList" class="space-y-2"></div>
   </section>
 
+  <section id="content-historico" class="tab-content space-y-4">
+    <div class="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto no-scrollbar" id="hist-tabs-container"></div>
+    <div id="hist-user-filter" class="flex gap-2 justify-center py-1">
+        <button id="hist-f-u1" onclick="histUserFilter=db.config.user1;render()" class="text-[9px] font-bold px-3 py-1 rounded-full border"></button>
+        <button id="hist-f-u2" onclick="histUserFilter=db.config.user2;render()" class="text-[9px] font-bold px-3 py-1 rounded-full border"></button>
+    </div>
+    <div id="historicoContainer" class="space-y-2"></div>
+    <button onclick="limparHistorico()" class="w-full py-2 text-[9px] font-bold text-rose-400 uppercase opacity-50">Limpar Histórico da Aba</button>
+  </section>
+
+  <section id="content-compras" class="tab-content space-y-4">
+      <div class="bg-white p-3 rounded-2xl border flex gap-2"><input id="compraItem" placeholder="Item faltando..." class="flex-1 p-2 bg-slate-50 rounded-xl text-sm border-none"><button onclick="addCompra()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold text-xl">+</button></div>
+      <div id="comprasList" class="bg-white rounded-2xl border divide-y overflow-hidden"></div>
+  </section>
+
+  <section id="content-agenda" class="tab-content space-y-4">
+    <div class="bg-white p-5 rounded-2xl border shadow-sm">
+      <h2 id="calendar-title" class="text-center font-black text-indigo-600 mb-4 uppercase text-xs tracking-widest"></h2>
+      <div id="calendar-grid" class="grid grid-cols-7 gap-2 text-center text-[10px]"></div>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border space-y-2">
+      <input id="ageData" type="date" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
+      <input id="ageDesc" placeholder="Descrição" class="w-full p-2 bg-slate-50 rounded-lg text-sm">
+      <button onclick="addAgenda()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm">AGENDAR</button>
+    </div>
+    <div id="agendaList" class="space-y-2"></div>
+  </section>
+
+  <section id="content-perfil" class="tab-content space-y-4">
+    <div class="bg-white p-6 rounded-2xl border space-y-4 shadow-sm">
+      <h3 class="font-black text-indigo-600 uppercase text-xs">Ajustar Nomes</h3>
+      <div class="text-[10px] text-slate-400 font-bold uppercase">Editando agora: <span id="perfil-status" class="text-indigo-600"></span></div>
+      <input id="input-user1" placeholder="Nome Usuário 1" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold">
+      <input id="input-user2" placeholder="Nome Usuário 2" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold">
+      <button onclick="saveUsers()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold text-sm uppercase">Salvar Nomes</button>
+      <button onclick="resetScores()" class="w-full py-2 text-[9px] font-bold text-rose-400 uppercase border border-rose-100 rounded-xl mt-4">Zerar Placar de Pontos</button>
+    </div>
+  </section>
 </main>
 
 <script>
-// CONFIGURAÇÃO REAL DO SEU FIREBASE HOME-2
 const firebaseConfig = {
   apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo",
   authDomain: "home-2-f8b01.firebaseapp.com",
-  databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com", // Link do seu 3º print
+  databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com",
   projectId: "home-2-f8b01",
   storageBucket: "home-2-f8b01.firebasestorage.app",
   messagingSenderId: "185628860546",
   appId: "1:185628860546:web:51bd909007f8879e4e149b"
 };
 
-// INICIALIZAÇÃO
 firebase.initializeApp(firebaseConfig);
 const dbRef = firebase.database().ref('organizador_realtime');
+
+const ranks = [
+    { min: 0, nome: "Recruta", cor: "text-slate-400" },
+    { min: 100, nome: "Ajudante", cor: "text-emerald-500" },
+    { min: 300, nome: "Mestre da Casa", cor: "text-indigo-500" },
+    { min: 600, nome: "Lenda Doméstica", cor: "text-amber-500" },
+    { min: 1000, nome: "CEO do Lar", cor: "text-rose-500" }
+];
+
+function getRank(pts) {
+    return ranks.slice().reverse().find(r => pts >= r.min) || ranks[0];
+}
 
 let currentUser = "Manu";
 let currentDay = "Segunda";
 let currentLazerCat = "Bares";
+let currentHistTab = "tarefas";
+let histUserFilter = "";
+
 let db = {
-    scores: { Manu: 0, Pedro: 0 },
-    tarefas: { "Segunda":[], "Terça":[], "Quarta":[], "Quinta":[], "Sexta":[], "Sábado":[], "Domingo":[] },
+    config: { user1: "Manu", user2: "Pedro" },
+    scores: {},
+    tarefas: {},
     lazer: [],
-    financeiro: { lazer: 0, casa: 0 },
+    financeiro: { salario: 0, vrava: 0, lazer: 0, casa: 0, fixo_alim: 0, fixo_net: 0, fixo_cel: 0, fixo_card: 0, total_recebido_sal: 0, total_recebido_ben: 0 },
     compras: [],
-    agenda: []
+    agenda: [],
+    hist: { tarefas: [], lazer: [], finanças: [], compras: [], agenda: [] }
 };
 
-// ESCUTA EM TEMPO REAL DO GOOGLE
-dbRef.on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
+dbRef.on('value', (s) => {
+    const data = s.val();
+    if (data) { 
         db = data;
-        render();
+        if(!db.scores) db.scores = {};
+        if(!db.financeiro) db.financeiro = { salario: 0, vrava: 0, lazer: 0, casa: 0, fixo_alim: 0, fixo_net: 0, fixo_cel: 0, fixo_card: 0 };
+        if(!histUserFilter) histUserFilter = db.config.user1;
+        render(); 
     }
 });
 
 function save() { dbRef.set(db); }
-
+function switchUser(u) { currentUser = u; render(); }
+function switchHistTab(t) { currentHistTab = t; render(); }
 function showTab(id) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById('content-'+id).classList.add('active');
@@ -169,164 +230,118 @@ function showTab(id) {
     document.getElementById('nav-'+id).classList.add('active-nav');
 }
 
-function switchUser(u) {
-    currentUser = u;
-    render();
-}
-
-function switchLazerCat(cat) {
-    currentLazerCat = cat;
-    render();
-}
-
-// TAREFAS
-function addTarefa() {
-    const t = document.getElementById('novaTarefa').value;
-    if(!t) return;
-    if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
-    db.tarefas[currentDay].push({id: Date.now(), t, u: currentUser});
-    document.getElementById('novaTarefa').value = "";
-    save();
-}
-
-function concluirTarefa(id, dia) {
-    const idx = db.tarefas[dia].findIndex(x => x.id === id);
-    db.scores[db.tarefas[dia][idx].u] += 10;
-    db.tarefas[dia].splice(idx, 1);
-    save();
-}
-
-// LAZER E SORTEIO
-function addLazer() {
-    const n = document.getElementById('lazerNome').value;
-    const v = document.getElementById('lazerValor').value;
-    if(!n) return;
-    if(!db.lazer) db.lazer = [];
-    db.lazer.push({id: Date.now(), n, v, cat: currentLazerCat});
-    document.getElementById('lazerNome').value = "";
-    document.getElementById('lazerValor').value = "";
-    save();
-}
-
-function sortearLazerGlobal() {
-    if(!db.lazer || db.lazer.length === 0) return alert("Adicione locais antes de sortear!");
-    const sorteado = db.lazer[Math.floor(Math.random() * db.lazer.length)];
-    alert(`🎰 LOCALIZADO!\n\n${sorteado.n}\nCategoria: ${sorteado.cat}\nEstimativa: R$ ${sorteado.v}`);
-}
-
-// AGENDA
-function addAgenda() {
-    const d = document.getElementById('ageData').value;
-    const desc = document.getElementById('ageDesc').value;
-    if(!d || !desc) return;
-    if(!db.agenda) db.agenda = [];
-    db.agenda.push({id: Date.now(), d, desc, u: currentUser});
-    document.getElementById('ageData').value = "";
-    document.getElementById('ageDesc').value = "";
-    save();
-}
-
-function excluirAgenda(id) {
-    db.agenda = db.agenda.filter(a => a.id !== id);
-    save();
-}
-
-// FINANÇAS E COMPRAS
 function addFinanceiro(m) {
     const v = Number(document.getElementById('finValor').value) * m;
     const d = document.getElementById('finDestino').value;
+    const j = document.getElementById('finJust').value || "Lançamento";
     if(!v) return;
-    db.financeiro[d] += v;
+
+    if(d === 'salario' && m > 0) {
+        db.financeiro.salario += v;
+        db.financeiro.total_recebido_sal = (db.financeiro.total_recebido_sal || 0) + v;
+    } else if(d === 'vrava' && m > 0) {
+        db.financeiro.vrava += v;
+        db.financeiro.total_recebido_ben = (db.financeiro.total_recebido_ben || 0) + v;
+    } else if(d === 'fixo_alim') {
+        db.financeiro.vrava += v; // v é negativo
+    } else {
+        db.financeiro.salario += v; // v é negativo
+    }
+
+    db.hist.finanças.unshift({ id: Date.now(), v, d, j, u: currentUser, date: new Date().toLocaleDateString('pt-br') });
+    document.getElementById('finValor').value = "";
+    document.getElementById('finJust').value = "";
     save();
 }
 
-function addCompra() {
-    const val = document.getElementById('compraItem').value;
-    if(!val) return;
-    if(!db.compras) db.compras = [];
-    db.compras.push({id: Date.now(), val});
-    document.getElementById('compraItem').value = "";
-    save();
+function renderCalendar() {
+    const grid = document.getElementById('calendar-grid');
+    const title = document.getElementById('calendar-title');
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    
+    const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    title.innerText = `${meses[now.getMonth()]} ${now.getFullYear()}`;
+    
+    let html = ['D','S','T','Q','Q','S','S'].map(d => `<div class="font-black text-slate-300">${d}</div>`).join("");
+    for(let i=0; i<firstDay; i++) html += `<div></div>`;
+    for(let i=1; i<=daysInMonth; i++) {
+        const isToday = i === now.getDate() ? 'today' : '';
+        html += `<div class="calendar-day ${isToday} py-1">${i}</div>`;
+    }
+    grid.innerHTML = html;
 }
 
 function render() {
-    // Nav Usuário
-    document.getElementById('btn-Manu').className = `px-4 py-1.5 rounded-full ${currentUser==='Manu'?'bg-white shadow text-indigo-600':'text-slate-400'}`;
-    document.getElementById('btn-Pedro').className = `px-4 py-1.5 rounded-full ${currentUser==='Pedro'?'bg-white shadow text-indigo-600':'text-slate-400'}`;
+    // BOTÕES USUÁRIO
+    const btnU1 = document.getElementById('btn-user1');
+    const btnU2 = document.getElementById('btn-user2');
+    btnU1.innerText = db.config.user1;
+    btnU2.innerText = db.config.user2;
+    btnU1.className = currentUser === db.config.user1 ? "px-4 py-1.5 rounded-full transition-all uppercase active-user-btn" : "px-4 py-1.5 rounded-full transition-all uppercase text-slate-400";
+    btnU2.className = currentUser === db.config.user2 ? "px-4 py-1.5 rounded-full transition-all uppercase active-user-btn" : "px-4 py-1.5 rounded-full transition-all uppercase text-slate-400";
 
-    // Dias Tarefas
-    const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-    document.getElementById('list-dias').innerHTML = dias.map(d => `
-        <button onclick="currentDay='${d}';render()" class="px-4 py-2 rounded-xl text-[9px] font-black transition-all ${currentDay===d?'bg-indigo-600 text-white shadow-lg':'bg-white border text-slate-400 uppercase'}">${d}</button>
-    `).join("");
+    // PERFIL STATUS
+    document.getElementById('perfil-status').innerText = currentUser;
 
-    document.getElementById('tarefasList').innerHTML = (db.tarefas[currentDay] || []).map(t => `
-        <div class="bg-white p-4 rounded-2xl border flex justify-between items-center shadow-sm">
-            <div>
-                <p class="text-[8px] font-black text-indigo-500 uppercase tracking-tighter">${t.u}</p>
-                <p class="font-bold text-slate-700 text-sm">${t.t}</p>
-            </div>
-            <button onclick="concluirTarefa(${t.id}, '${currentDay}')" class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center font-bold">✓</button>
-        </div>
-    `).join("");
-
-    // Categorias Lazer
-    document.querySelectorAll('.lazer-cat-btn').forEach(b => b.classList.remove('active-sub'));
-    document.getElementById('lazer-'+currentLazerCat).classList.add('active-sub');
-    document.getElementById('label-cat').innerText = currentLazerCat;
-    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(l => l.cat === currentLazerCat).map(l => `
-        <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
-            <span class="text-slate-700 font-bold text-sm">${l.n} <small class="text-slate-400 font-normal ml-1">R$ ${l.v}</small></span>
-            <button onclick="db.lazer = db.lazer.filter(x=>x.id!==${l.id});save()" class="text-rose-400 font-bold px-2">✕</button>
-        </div>
-    `).join("");
-
-    // Calendário Detalhado
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    document.getElementById('calendar-title').innerText = now.toLocaleString('pt-br', {month:'long', year:'numeric'});
+    // FINANCEIRO RENDER
+    const f = db.financeiro;
+    document.getElementById('fin-salario-res').innerText = (f.salario || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+    document.getElementById('fin-vrava-res').innerText = (f.vrava || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
     
-    let gridHtml = "";
-    for(let i=0; i<firstDay; i++) gridHtml += `<div></div>`;
-    for(let i=1; i<=daysInMonth; i++) {
-        const dStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-        const has = (db.agenda || []).some(a => a.d === dStr);
-        gridHtml += `<div class="aspect-square flex items-center justify-center text-[10px] rounded-lg ${has?'bg-indigo-600 text-white font-black':'text-slate-300 border border-slate-50'}">${i}</div>`;
-    }
-    document.getElementById('calendar-grid').innerHTML = gridHtml;
+    const percSal = Math.min(100, Math.round(((f.total_recebido_sal - f.salario) / f.total_recebido_sal) * 100)) || 0;
+    const percBen = Math.min(100, Math.round(((f.total_recebido_ben - f.vrava) / f.total_recebido_ben) * 100)) || 0;
+    
+    document.getElementById('perc-sal').innerText = percSal + "%";
+    document.getElementById('bar-sal').style.width = percSal + "%";
+    document.getElementById('perc-ben').innerText = percBen + "%";
+    document.getElementById('bar-ben').style.width = percBen + "%";
 
-    // Lista Agenda
-    document.getElementById('agendaList').innerHTML = (db.agenda || []).sort((a,b)=>new Date(a.d)-new Date(b.d)).map(a => {
-        const dPart = a.d.split('-');
-        return `
-        <div class="bg-white p-3 rounded-2xl border flex justify-between items-center shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-50 px-2 py-1 rounded-lg text-center min-w-[40px]">
-                    <span class="block text-[7px] font-black text-indigo-400 uppercase">${new Date(a.d).toLocaleString('pt-br',{month:'short'})}</span>
-                    <span class="block text-sm font-black text-indigo-700">${dPart[2]}</span>
-                </div>
-                <div>
-                    <p class="font-bold text-slate-700 text-xs">${a.desc}</p>
-                    <p class="text-[7px] text-slate-400 font-black uppercase tracking-widest">Por: ${a.u}</p>
-                </div>
-            </div>
-            <button onclick="excluirAgenda(${a.id})" class="text-rose-400 text-[9px] font-black border border-rose-100 px-2 py-1 rounded-lg">CANCELAR</button>
-        </div>`
-    }).join("");
+    // LAZER TABS
+    const cats = ["Bares", "Cafés", "Restaurantes", "Cinemas"];
+    document.getElementById('lazer-tabs').innerHTML = cats.map(c => `<button onclick="currentLazerCat='${c}';render()" class="flex-1 py-2 text-[9px] font-bold rounded-lg ${currentLazerCat===c?'active-sub':'text-slate-500'} uppercase">${c}</button>`).join("");
+    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(l => l.cat === currentLazerCat).map(l => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center"><span class="text-slate-700 font-bold text-sm">${l.n}</span><button onclick="db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()" class="text-rose-400 font-bold">✕</button></div>`).join("");
 
-    // Finanças e Compras
-    document.getElementById('fin-lazer').innerText = (db.financeiro.lazer || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    document.getElementById('fin-casa').innerText = (db.financeiro.casa || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    document.getElementById('comprasList').innerHTML = (db.compras || []).map(c => `
-        <div class="p-4 flex items-center justify-between bg-white">
-            <div class="flex items-center gap-3">
-                <input type="checkbox" onchange="db.compras=db.compras.filter(x=>x.id!==${c.id});save()" class="w-5 h-5 rounded-lg border-slate-200 text-indigo-600">
-                <span class="text-slate-700 font-bold text-sm">${c.val}</span>
-            </div>
-        </div>
-    `).join("");
+    // HISTORICO TABS
+    const hTabs = ['tarefas', 'lazer', 'finanças', 'compras', 'agenda'];
+    document.getElementById('hist-tabs-container').innerHTML = hTabs.map(t => `<button onclick="switchHistTab('${t}')" class="flex-1 py-2 text-[8px] font-bold rounded-lg uppercase px-3 ${currentHistTab === t ? 'active-sub' : 'text-slate-500'}">${t}</button>`).join("");
+    
+    // AGENDA
+    renderCalendar();
+    document.getElementById('agendaList').innerHTML = (db.agenda || []).map(a => `<div class="bg-white p-3 rounded-xl border"><p class="text-[7px] font-black text-indigo-400 uppercase">${a.d}</p><p class="text-xs font-bold text-slate-700">${a.desc}</p></div>`).join("");
+
+    // OUTROS (TAREFAS, SCORES, ETC) - Mantidos do original
+    const s1 = db.scores[db.config.user1] || 0;
+    const s2 = db.scores[db.config.user2] || 0;
+    const r1 = getRank(s1); const r2 = getRank(s2);
+    document.getElementById('score-name1').innerHTML = `${db.config.user1} <br> <span class="${r1.cor}">[${r1.nome}]</span>`;
+    document.getElementById('score-name2').innerHTML = `${db.config.user2} <br> <span class="${r2.cor}">[${r2.nome}]</span>`;
+    document.getElementById('score-val1').innerText = s1 + " pts";
+    document.getElementById('score-val2').innerText = s2 + " pts";
+    
+    const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+    document.getElementById('list-dias').innerHTML = dias.map(d => `<button onclick="currentDay='${d}';render()" class="px-4 py-2 rounded-xl text-[9px] font-black ${currentDay===d?'bg-indigo-600 text-white':'bg-white text-slate-400 border uppercase'}">${d}</button>`).join("");
+    document.getElementById('tarefasList').innerHTML = (db.tarefas[currentDay] || []).map(t => `<div class="bg-white p-4 rounded-2xl border flex justify-between items-center"><div><p class="text-[8px] font-black text-indigo-500 uppercase">${t.u}</p><p class="font-bold text-slate-700 text-sm">${t.t}</p></div><button onclick="concluirTarefa(${t.id},'${currentDay}')" class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full font-bold">✓</button></div>`).join("");
+
+    // HISTORICO FILTRO
+    document.getElementById('hist-f-u1').innerText = db.config.user1;
+    document.getElementById('hist-f-u2').innerText = db.config.user2;
+    document.getElementById('hist-user-filter').style.display = currentHistTab==='tarefas'?'flex':'none';
+    const items = db.hist[currentHistTab] || [];
+    document.getElementById('historicoContainer').innerHTML = items.length ? items.map(i => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center"><div><p class="text-[7px] font-black text-slate-400 uppercase">${i.date} - ${i.u}</p><p class="text-xs font-bold text-slate-700">${i.j || i.n || i.val || i.desc}</p></div></div>`).join("") : '<p class="text-center text-[10px] text-slate-400 py-10">VAZIO</p>';
 }
+
+// Funções de ação (addTarefa, concluirTarefa, etc) permanecem as mesmas.
+function addTarefa() { const t = document.getElementById('novaTarefa').value; if(!t) return; if(!db.tarefas[currentDay]) db.tarefas[currentDay] = []; db.tarefas[currentDay].push({id: Date.now(), t, u: currentUser}); document.getElementById('novaTarefa').value = ""; save(); }
+function concluirTarefa(id, dia) { const idx = db.tarefas[dia].findIndex(x => x.id === id); const item = db.tarefas[dia][idx]; db.scores[item.u] = (db.scores[item.u] || 0) + 10; db.hist.tarefas.unshift({ ...item, date: new Date().toLocaleDateString('pt-br') }); db.tarefas[dia].splice(idx, 1); save(); }
+function addCompra() { const val = document.getElementById('compraItem').value; if(!val) return; db.compras.push({id: Date.now(), val, u: currentUser}); document.getElementById('compraItem').value = ""; save(); }
+function concluirCompra(id) { const idx = db.compras.findIndex(x => x.id === id); db.hist.compras.unshift({ ...db.compras[idx], date: new Date().toLocaleDateString('pt-br') }); db.compras.splice(idx, 1); save(); }
+function addLazer() { const n = document.getElementById('lazerNome').value; const v = document.getElementById('lazerValor').value; if(!n) return; const item = {id: Date.now(), n, v, cat: currentLazerCat, u: currentUser, date: new Date().toLocaleDateString('pt-br')}; db.lazer.push(item); db.hist.lazer.unshift(item); document.getElementById('lazerNome').value = ""; save(); }
+function addAgenda() { const d = document.getElementById('ageData').value; const desc = document.getElementById('ageDesc').value; if(!d || !desc) return; const item = {id: Date.now(), d, desc, u: currentUser, date: new Date().toLocaleDateString('pt-br')}; db.agenda.push(item); db.hist.agenda.unshift(item); save(); }
+function saveUsers() { const n1 = document.getElementById('input-user1').value; const n2 = document.getElementById('input-user2').value; if(n1) db.config.user1 = n1; if(n2) db.config.user2 = n2; save(); }
+function resetScores() { if(confirm("Zerar placar?")) { db.scores[db.config.user1]=0; db.scores[db.config.user2]=0; save(); } }
+function limparHistorico() { if(confirm("Limpar esta aba?")) { db.hist[currentHistTab] = []; save(); } }
 
 render();
 </script>
