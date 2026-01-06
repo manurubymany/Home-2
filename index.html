@@ -176,12 +176,19 @@ function addTarefa() {
     save();
 }
 
-function toggleTarefa(id, dia) {
+// CONCLUIR TAREFA (Gera pontos e vai pro histórico)
+function concluirTarefa(id, dia) {
     const idx = db.tarefas[dia].findIndex(x => x.id === id);
     const item = db.tarefas[dia][idx];
-    item.done = true;
     db.scores[item.u] += 10;
-    db.historico.tarefas.push({...item, date: new Date().toLocaleDateString()});
+    db.historico.tarefas.push({...item, date: new Date().toLocaleDateString(), status: 'Concluída'});
+    db.tarefas[dia].splice(idx, 1);
+    save();
+}
+
+// REMOVER TAREFA (Apenas deleta)
+function excluirTarefa(id, dia) {
+    const idx = db.tarefas[dia].findIndex(x => x.id === id);
     db.tarefas[dia].splice(idx, 1);
     save();
 }
@@ -254,7 +261,10 @@ function render() {
     document.getElementById('tarefasList').innerHTML = db.tarefas[currentDay].map(t => `
         <div class="bg-white p-3 rounded-lg border flex justify-between items-center ${t.u !== currentUser ? 'opacity-40' : ''}">
             <span><small class="block text-[8px] font-bold text-indigo-500">${t.u}</small>${t.t}</span>
-            <button onclick="toggleTarefa(${t.id}, '${currentDay}')" class="w-6 h-6 border-2 border-indigo-600 rounded flex items-center justify-center text-indigo-600 font-bold">✓</button>
+            <div class="flex gap-2">
+                <button onclick="concluirTarefa(${t.id}, '${currentDay}')" class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold" title="Concluir">✓</button>
+                <button onclick="excluirTarefa(${t.id}, '${currentDay}')" class="w-8 h-8 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center font-bold" title="Excluir">✕</button>
+            </div>
         </div>
     `).join("");
 
@@ -270,7 +280,7 @@ function render() {
     document.getElementById('fin-lazer').innerText = db.financeiro.lazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
     document.getElementById('fin-casa').innerText = db.financeiro.casa.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
 
-    // Agenda (Calendário Simplificado)
+    // Agenda
     const grid = document.getElementById('calendar-grid');
     grid.innerHTML = "";
     for(let i=1; i<=31; i++) {
