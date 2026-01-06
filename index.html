@@ -2,155 +2,157 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planner Family 2026 - Centralizado & Responsivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Planner Yourself 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; color: #334155; margin: 0; padding: 0; }
+        :root { --brand-color: #6366f1; }
+        body { font-family:'Plus Jakarta Sans',sans-serif; background:#F8FAFC; color: #1e293b; margin: 0; padding: 0; }
+        .glass-header { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
         .tab-content { display:none }
-        .tab-content.active { display:block; animation: fadeIn 0.4s ease; }
-        .active-nav { color:#6366f1; font-weight:800; border-bottom: 2px solid #6366f1; }
-        .active-user-btn { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-        .riscado { text-decoration: line-through; opacity: 0.4; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Centralização e Ajuste Dinâmico */
-        .main-container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            width: 100%; 
-        }
-
-        /* Ajuste das abas para ocupar 100% da largura do container */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 12px 4px;
-            transition: all 0.2s;
-            font-size: 10px;
-            white-space: nowrap;
-        }
-
+        .tab-content.active { display:block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .active-nav { color: var(--brand-color); font-weight: 800; position: relative; }
+        .active-nav::after { content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--brand-color); border-radius: 10px; }
+        .active-user-btn { background: white !important; color: var(--brand-color) !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        .card-clean { background: white; border-radius: 1.5rem; border: 1px solid #F1F5F9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
+        .riscado { text-decoration: line-through; opacity: 0.35; filter: grayscale(1); }
+        .main-container { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 1.25rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .card-clean { background: white; border: 1px solid #F1F5F9; border-radius: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Calendário */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border-radius: 12px; background: #fff; border: 1px solid #f1f5f9; cursor: pointer; }
+        .calendar-day.has-event { border: 2px solid var(--brand-color); background: #f5f3ff; color: var(--brand-color); }
+        #modal-calendario { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+        #modal-calendario.active { display: flex; }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
+
+<div id="modal-calendario">
+    <div class="bg-white w-full max-w-md rounded-[2.5rem] p-6 max-h-[90vh] overflow-y-auto no-scrollbar relative shadow-2xl">
+        <button onclick="toggleCalendario()" class="absolute top-6 right-6 text-slate-300 hover:text-slate-600 font-bold">✕</button>
+        <h2 class="text-lg font-black text-slate-800 mb-6">📅 Calendário 2026</h2>
+        <div class="calendar-grid mb-6" id="calendar-grid-container"></div>
+        <div id="calendar-details" class="space-y-3 border-t pt-4"></div>
+    </div>
+</div>
 
 <section id="login-screen" class="fixed inset-0 bg-white z-[100] flex items-center justify-center p-6 text-center">
     <div class="w-full max-w-sm space-y-8">
-        <div class="inline-block p-4 bg-indigo-50 rounded-3xl text-indigo-600 font-black text-2xl">PY</div>
-        <div class="space-y-2">
-            <h1 class="text-2xl font-black text-slate-800">Bem-vindo.</h1>
-            <p class="text-sm text-slate-400 font-medium">Gerencie sua rotina de forma clara.</p>
-        </div>
-        <div class="flex bg-slate-50 p-1 rounded-2xl border border-slate-100">
-            <button id="mode-login" onclick="setAuthMode('login')" class="flex-1 py-3 text-[10px] font-black uppercase rounded-xl bg-white shadow-sm transition-all">Entrar</button>
-            <button id="mode-cadastro" onclick="setAuthMode('cadastro')" class="flex-1 py-3 text-[10px] font-black uppercase rounded-xl text-slate-400 transition-all">Cadastrar</button>
+        <div class="inline-block p-4 bg-indigo-50 rounded-3xl text-indigo-600 font-black text-2xl rotate-3">PY</div>
+        <h1 class="text-2xl font-black text-slate-800">Planner <span class="text-indigo-600 italic">Yourself</span></h1>
+        <div class="flex bg-slate-50 p-1.5 rounded-2xl border">
+            <button id="mode-login" onclick="setAuthMode('login')" class="flex-1 py-3 text-[10px] font-black uppercase rounded-xl bg-white shadow-sm">Entrar</button>
+            <button id="mode-cadastro" onclick="setAuthMode('cadastro')" class="flex-1 py-3 text-[10px] font-black uppercase rounded-xl text-slate-400">Cadastrar</button>
         </div>
         <div class="space-y-3">
-            <input id="auth-nome" type="text" placeholder="@familia" class="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-transparent focus:border-indigo-100 outline-none transition-all">
-            <input id="auth-senha" type="password" placeholder="Senha" class="w-full p-4 bg-slate-50 rounded-2xl font-bold border border-transparent focus:border-indigo-100 outline-none transition-all">
-            <button id="auth-btn" onclick="executarAuth()" class="w-full bg-indigo-600 text-white p-5 rounded-2xl font-black shadow-lg shadow-indigo-100 uppercase text-xs tracking-widest active:scale-95 transition-all">Acessar Painel</button>
+            <input id="auth-nome" type="text" placeholder="@família" class="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-center">
+            <input id="auth-senha" type="password" placeholder="Senha" class="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-center">
+            <button onclick="executarAuth()" class="w-full bg-indigo-600 text-white p-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">Acessar</button>
         </div>
     </div>
 </section>
 
 <div id="main-app" class="hidden">
-    <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
-        <div class="main-container px-4">
-            <div class="flex justify-between items-center py-4">
-                <span id="display-grupo" class="text-[9px] font-black bg-slate-100 text-slate-500 px-3 py-1.5 rounded-full uppercase"></span>
-                <div class="flex bg-slate-50 p-1 rounded-full text-[10px] font-bold border">
-                    <button id="btn-user1" onclick="switchUser(db.config.user1)" class="px-5 py-2 rounded-full uppercase transition-all"></button>
-                    <button id="btn-user2" onclick="switchUser(db.config.user2)" class="px-5 py-2 rounded-full uppercase transition-all"></button>
+    <header class="glass-header sticky top-0 z-50">
+        <div class="main-container">
+            <div class="flex flex-col items-center pt-6 pb-2">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 text-white px-2 py-1 rounded-lg font-black text-xs">PY</div>
+                    <h1 class="text-lg font-extrabold text-slate-800">Planner <span class="text-indigo-600">Yourself</span></h1>
                 </div>
-                <button onclick="logout()" class="text-slate-300 hover:text-rose-500 font-bold text-[10px] uppercase">Sair</button>
+                <span id="display-grupo" class="text-[8px] font-black text-slate-300 uppercase tracking-widest mt-1"></span>
             </div>
-            
-            <nav class="border-t">
-                <button id="nav-casa" onclick="showTab('casa')" class="nav-item active-nav">🏠 Tarefas</button>
-                <button id="nav-agenda" onclick="showTab('agenda')" class="nav-item text-slate-400">📅 Agenda</button>
-                <button id="nav-financeiro" onclick="showTab('financeiro')" class="nav-item text-slate-400">💰 Finanças</button>
-                <button id="nav-compras" onclick="showTab('compras')" class="nav-item text-slate-400">🛒 Compras</button>
-                <button id="nav-lazer" onclick="showTab('lazer')" class="nav-item text-slate-400">🍷 Lazer</button>
-                <button id="nav-logs" onclick="showTab('logs')" class="nav-item text-slate-400">📜 Logs</button>
-                <button id="nav-perfil" onclick="showTab('perfil')" class="nav-item text-slate-400">👤 Perfil</button>
+            <div class="flex justify-between items-center py-4">
+                <div class="flex bg-slate-100 p-1 rounded-2xl w-full max-w-[240px]">
+                    <button id="btn-user1" onclick="switchUser(db.config.user1)" class="flex-1 py-2 text-[10px] font-bold rounded-xl uppercase transition-all"></button>
+                    <button id="btn-user2" onclick="switchUser(db.config.user2)" class="flex-1 py-2 text-[10px] font-bold rounded-xl uppercase transition-all"></button>
+                </div>
+                <button onclick="logout()" class="p-3 text-slate-300 hover:text-rose-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </div>
+            <nav class="flex overflow-x-auto no-scrollbar gap-1 pb-2">
+                <button id="nav-casa" onclick="showTab('casa')" class="nav-item active-nav px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Tarefas</button>
+                <button id="nav-agenda" onclick="showTab('agenda')" class="nav-item text-slate-400 px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Agenda</button>
+                <button id="nav-financeiro" onclick="showTab('financeiro')" class="nav-item text-slate-400 px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Finanças</button>
+                <button id="nav-compras" onclick="showTab('compras')" class="nav-item text-slate-400 px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Compras</button>
+                <button id="nav-lazer" onclick="showTab('lazer')" class="nav-item text-slate-400 px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Lazer</button>
+                <button id="nav-logs" onclick="showTab('logs')" class="nav-item text-slate-400 px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Logs</button>
+                <button id="nav-perfil" onclick="showTab('perfil')" class="nav-item text-slate-400 px-4 py-3 text-[10px] font-bold uppercase whitespace-nowrap">Perfil</button>
             </nav>
         </div>
     </header>
 
-    <main class="main-container p-4 space-y-6">
+    <main class="main-container mt-6 space-y-8">
         <section id="content-casa" class="tab-content active space-y-4">
-            <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar justify-start sm:justify-center" id="list-dias"></div>
-            <div class="card-clean p-4 flex gap-2">
-                <input id="novaTarefa" placeholder="Escreva uma tarefa..." class="flex-1 bg-transparent outline-none font-bold text-sm px-2 text-slate-600">
-                <button onclick="addTarefa()" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-md">+</button>
+            <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="list-dias"></div>
+            <div class="card-clean p-2 flex gap-2">
+                <input id="novaTarefa" placeholder="Nova tarefa..." class="flex-1 bg-transparent outline-none font-bold text-sm px-4">
+                <button onclick="addTarefa()" class="bg-indigo-600 text-white w-12 h-12 rounded-2xl font-black shadow-lg shadow-indigo-100">+</button>
             </div>
             <div id="tarefasList" class="space-y-3"></div>
         </section>
 
         <section id="content-agenda" class="tab-content space-y-4">
-            <div class="card-clean p-6 space-y-4 text-center">
-                <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Novo Evento</p>
-                <input type="date" id="agendaData" class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none text-center">
-                <input id="agendaComp" placeholder="O que temos marcado?" class="w-full p-4 bg-slate-50 rounded-2xl font-medium border-none outline-none text-center">
-                <button onclick="addAgenda()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black uppercase text-[10px]">Salvar</button>
+            <div class="card-clean p-6 space-y-3">
+                <input type="date" id="agendaData" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
+                <input id="agendaComp" placeholder="O que agendar?" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
+                <button onclick="addAgenda()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black uppercase text-[10px]">Salvar Evento</button>
             </div>
+            <button onclick="toggleCalendario()" class="w-full bg-white border p-4 rounded-2xl font-black text-indigo-600 text-[10px] uppercase">📅 Ver Calendário Completo</button>
             <div id="agendaList" class="space-y-3"></div>
         </section>
 
         <section id="content-financeiro" class="tab-content space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="card-clean p-6 text-center">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Saldo R$</p>
-                    <p id="fin-salario" class="text-xl font-black mt-1 text-slate-800">R$ 0,00</p>
-                </div>
-                <div class="card-clean p-6 text-center border-emerald-100">
-                    <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Saldo VR</p>
-                    <p id="fin-vrava" class="text-xl font-black mt-1 text-emerald-700">R$ 0,00</p>
-                </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="card-clean p-5 text-center"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Saldo R$</p><p id="fin-salario" class="text-xl font-black mt-1">R$ 0,00</p></div>
+                <div class="card-clean p-5 text-center"><p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Saldo VR</p><p id="fin-vrava" class="text-xl font-black mt-1 text-emerald-700">R$ 0,00</p></div>
             </div>
             <div class="card-clean p-6 space-y-3">
                 <div class="grid grid-cols-2 gap-2">
-                    <input id="finValor" type="number" placeholder="0,00" class="p-4 bg-slate-50 rounded-2xl font-black text-xl outline-none text-center">
-                    <select id="finTipo" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase">
-                        <option value="rec_salario">➕ Receita R$</option>
-                        <option value="rec_vrava">➕ Crédito VR</option>
-                        <option value="gas_salario">➖ Gasto R$</option>
-                        <option value="gas_vrava">➖ Gasto VR</option>
+                    <input id="finValor" type="number" placeholder="0,00" class="p-4 bg-slate-50 rounded-2xl font-black text-xl text-center outline-none">
+                    <select id="finTipo" onchange="toggleJustificativa()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none">
+                        <optgroup label="Entradas"><option value="rec_salario">➕ Salário</option><option value="rec_vrava">➕ Recarga VR</option></optgroup>
+                        <optgroup label="Saídas"><option value="gas_internet">➖ Internet</option><option value="gas_celular">➖ Celular</option><option value="gas_alimentacao">➖ Alimentação (VR)</option><option value="gas_academia">➖ Academia</option><option value="gas_outros">➖ Outros</option></optgroup>
                     </select>
                 </div>
+                <div id="wrapper-justificativa" class="hidden"><input id="finJustificativa" placeholder="Justificativa..." class="w-full p-4 bg-slate-50 rounded-2xl font-medium text-center outline-none"></div>
                 <button onclick="addFinanceiro()" class="w-full bg-indigo-600 text-white p-5 rounded-2xl font-black uppercase text-[10px]">Registrar</button>
             </div>
             <div id="financeiroHistorico" class="space-y-2"></div>
         </section>
 
-        <section id="content-compras" class="tab-content space-y-5">
+        <section id="content-compras" class="tab-content space-y-4">
             <div class="flex gap-2">
-                <button onclick="restaurarCompras()" class="flex-1 bg-white p-4 rounded-2xl font-black text-[10px] uppercase border text-indigo-600">Essenciais</button>
-                <button onclick="limparComprasTicadas()" class="flex-1 bg-white p-4 rounded-2xl font-black text-[10px] uppercase border text-rose-400">Limpar</button>
+                <button onclick="restaurarComprasEssenciais()" class="flex-1 bg-white p-4 rounded-2xl font-black text-[10px] uppercase text-indigo-600 border shadow-sm">📦 Essenciais</button>
+                <button onclick="shareWhatsApp()" class="flex-1 bg-emerald-500 p-4 rounded-2xl font-black text-[10px] uppercase text-white shadow-lg">📱 WhatsApp</button>
             </div>
-            <div class="card-clean p-4 flex gap-2">
-                <input id="compraNovoItem" placeholder="Novo item..." class="flex-1 text-sm font-bold outline-none px-2 text-center">
-                <button onclick="addCompraManual()" class="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black">+</button>
+            <div class="card-clean p-4 space-y-3">
+                <div class="flex gap-2">
+                    <input id="compraNovoItem" placeholder="Item..." class="flex-1 text-sm font-bold outline-none px-4 bg-slate-50 rounded-xl">
+                    <select id="compraCategoria" class="bg-slate-50 p-3 rounded-xl text-[10px] font-black uppercase outline-none">
+                        <option value="Mercearia">📦 Mercearia</option>
+                        <option value="Açougue">🍖 Açougue</option>
+                        <option value="Hortifruti">🥕 Hortifruti</option>
+                        <option value="Pets">🐾 Pets</option>
+                    </select>
+                </div>
+                <button onclick="addCompraManual()" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-black uppercase text-[10px]">Adicionar</button>
             </div>
             <div id="comprasList" class="space-y-6"></div>
+            <button onclick="limparComprasTicadas()" class="w-full p-4 text-[10px] font-black text-slate-300 uppercase">Limpar Ticados</button>
         </section>
 
         <section id="content-lazer" class="tab-content space-y-4 text-center">
             <div id="lazer-tabs" class="flex gap-1 bg-white p-1.5 rounded-2xl border overflow-x-auto no-scrollbar"></div>
-            <button onclick="sortearLazer()" id="btn-sorteio" class="w-full bg-white border-2 border-indigo-600 text-indigo-600 p-6 rounded-[2rem] font-black uppercase text-xs">🎰 Sortear</button>
+            <button onclick="sortearLazer()" class="w-full bg-indigo-50 border-2 border-dashed border-indigo-200 text-indigo-600 p-6 rounded-3xl font-black uppercase text-xs">🎰 Sortear Sugestão</button>
+            <div class="card-clean p-4 flex gap-2"><input id="lazerNovo" placeholder="Novo lugar..." class="flex-1 text-sm font-bold outline-none px-4 bg-slate-50 rounded-xl"><button onclick="addLazer()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black">+</button></div>
             <div id="lazerList" class="space-y-2 text-left"></div>
         </section>
 
@@ -158,38 +160,27 @@
             <div id="logsDisplay" class="space-y-2 max-h-[500px] overflow-y-auto no-scrollbar"></div>
         </section>
 
-        <section id="content-perfil" class="tab-content space-y-4 text-center">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="card-clean p-8">
-                    <p id="label-user1" class="text-[10px] font-black text-slate-300 uppercase"></p>
-                    <p id="ponto-user1" class="text-4xl font-black text-indigo-600 mt-2">0</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase">Pontos</p>
-                </div>
-                <div class="card-clean p-8">
-                    <p id="label-user2" class="text-[10px] font-black text-slate-300 uppercase"></p>
-                    <p id="ponto-user2" class="text-4xl font-black text-indigo-600 mt-2">0</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase">Pontos</p>
+        <section id="content-perfil" class="tab-content space-y-6">
+            <div class="card-clean p-8 text-center bg-indigo-600 text-white">
+                <p class="text-[10px] font-black uppercase tracking-widest opacity-70">Ranking da Família</p>
+                <div class="flex justify-around mt-8">
+                    <div><p id="label-user1" class="text-xs font-bold mb-1 uppercase opacity-80"></p><p id="ponto-user1" class="text-5xl font-black tracking-tighter">0</p></div>
+                    <div class="w-px h-16 bg-white/20 self-center"></div>
+                    <div><p id="label-user2" class="text-xs font-bold mb-1 uppercase opacity-80"></p><p id="ponto-user2" class="text-5xl font-black tracking-tighter">0</p></div>
                 </div>
             </div>
-            <div class="card-clean p-8 space-y-4">
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nomes dos Usuários</p>
+            <div class="card-clean p-6 space-y-4">
                 <input id="input-user1" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
                 <input id="input-user2" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
-                <button onclick="saveUsers()" class="w-full bg-slate-900 text-white p-5 rounded-2xl font-black uppercase text-xs">Salvar Nomes</button>
+                <button onclick="saveUsers()" class="w-full bg-slate-900 text-white p-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl">Salvar Configurações</button>
             </div>
         </section>
-
     </main>
 </div>
 
 <script>
-// FIREBASE CONFIG
-const firebaseConfig = {
-    apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo",
-    authDomain: "home-2-f8b01.firebaseapp.com",
-    databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com",
-    projectId: "home-2-f8b01"
-};
+// --- FIREBASE & DATA ---
+const firebaseConfig = { apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo", authDomain: "home-2-f8b01.firebaseapp.com", databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com", projectId: "home-2-f8b01" };
 firebase.initializeApp(firebaseConfig);
 
 let currentGroup = localStorage.getItem('py_v26_final');
@@ -199,135 +190,141 @@ const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domi
 let currentDay = dias[new Date().getDay() - 1] || "Segunda";
 let currentLazerCat = "Restaurante";
 
-let db = {
-    config: { user1: "Manu", user2: "Pedro", p1: 0, p2: 0 },
-    tarefas: { "Segunda":[], "Terça":[], "Quarta":[], "Quinta":[], "Sexta":[], "Sábado":[], "Domingo":[] },
-    financeiro: { s: 0, v: 0, h: [] },
-    lazer: [],
-    compras: [],
-    agenda: [],
-    logs: []
-};
+let db = { config: { user1: "Manu", user2: "Pedro", p1: 0, p2: 0 }, tarefas: {}, financeiro: { s: 0, v: 0, h: [] }, lazer: [], compras: [], agenda: [], logs: [] };
 
+// --- LOGIN & AUTH ---
 function setAuthMode(m) { authMode = m; renderAuth(); }
 function renderAuth() {
     document.getElementById('mode-login').className = authMode==='login' ? 'flex-1 py-3 text-[10px] font-black uppercase rounded-xl bg-white shadow-sm' : 'flex-1 py-3 text-[10px] font-black uppercase rounded-xl text-slate-400';
     document.getElementById('mode-cadastro').className = authMode==='cadastro' ? 'flex-1 py-3 text-[10px] font-black uppercase rounded-xl bg-white shadow-sm' : 'flex-1 py-3 text-[10px] font-black uppercase rounded-xl text-slate-400';
 }
-
 function executarAuth() {
     const g = document.getElementById('auth-nome').value.trim().toLowerCase().replace('@','');
     const s = document.getElementById('auth-senha').value.trim();
-    if(!g || !s) return alert("Preencha os campos.");
+    if(!g || !s) return;
     const ref = firebase.database().ref('v26_final/' + g);
     ref.once('value', snap => {
-        if(authMode === 'cadastro') {
-            if(snap.exists()) return alert("Família já existe.");
-            ref.set({...db, senha: s}).then(() => logar(g));
-        } else {
-            const data = snap.val();
-            if(data && data.senha === s) logar(g); else alert("Acesso negado.");
-        }
+        if(authMode==='cadastro') { if(snap.exists()) return alert("Já existe!"); ref.set({...db, senha: s}).then(()=>logar(g)); }
+        else { const d = snap.val(); if(d && d.senha===s) logar(g); else alert("Erro de acesso."); }
     });
 }
-
 function logar(g) {
     currentGroup = g; localStorage.setItem('py_v26_final', g);
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('main-app').classList.remove('hidden');
     document.getElementById('display-grupo').innerText = "@" + g.toUpperCase();
-    firebase.database().ref('v26_final/' + g).on('value', snap => {
-        if(snap.exists()) {
-            db = snap.val();
-            if(!db.tarefas) db.tarefas = {};
-            dias.forEach(d => { if(!db.tarefas[d]) db.tarefas[d] = []; });
-            if(!currentUser) currentUser = db.config.user1;
-            render();
-        }
-    });
+    firebase.database().ref('v26_final/'+g).on('value', snap => { if(snap.exists()){ db = snap.val(); if(!currentUser) currentUser=db.config.user1; render(); }});
 }
-
-function save() { if(currentGroup) firebase.database().ref('v26_final/' + currentGroup).update(db); }
 function logout() { localStorage.removeItem('py_v26_final'); location.reload(); }
-function addLog(msg, cat) {
-    if(!db.logs) db.logs = [];
-    const h = new Date().toLocaleTimeString('pt-br', {hour:'2-digit', minute:'2-digit'});
-    db.logs.unshift({ u: currentUser, msg, cat, h, id: Date.now() });
-}
+function save() { firebase.database().ref('v26_final/'+currentGroup).update(db); }
 
-function addTarefa() {
-    const v = document.getElementById('novaTarefa').value; if(!v) return;
-    db.tarefas[currentDay].push({ id: Date.now(), txt: v, check: false, u: currentUser });
-    addLog(`Tarefa: ${v}`, 'tarefa');
-    document.getElementById('novaTarefa').value = ""; save();
-}
-
-function concluirTarefa(id) {
-    const t = db.tarefas[currentDay].find(x => x.id === id);
-    if(t.check) return;
-    t.check = true;
-    if(currentUser === db.config.user1) db.config.p1 += 10; else db.config.p2 += 10;
-    addLog(`Concluiu tarefa`, 'tarefa');
-    save();
-}
-
+// --- FINANCEIRO ---
+function toggleJustificativa() { document.getElementById('wrapper-justificativa').classList.toggle('hidden', !document.getElementById('finTipo').value.startsWith('gas')); }
 function addFinanceiro() {
     const v = Number(document.getElementById('finValor').value);
-    const tipo = document.getElementById('finTipo').value;
+    const t = document.getElementById('finTipo').value;
+    const j = document.getElementById('finJustificativa').value;
     if(!v) return;
-    if(tipo.startsWith('rec')) { if(tipo.endsWith('salario')) db.financeiro.s += v; else db.financeiro.v += v; }
-    else { if(tipo.endsWith('salario')) db.financeiro.s -= v; else db.financeiro.v -= v; }
+    const sel = document.getElementById('finTipo');
+    const catTxt = sel.options[sel.selectedIndex].text;
+    if(t.startsWith('gas') && !j) return alert("Justifique!");
+    if(t==='rec_salario') db.financeiro.s += v;
+    else if(t==='rec_vrava') db.financeiro.v += v;
+    else if(t==='gas_alimentacao') db.financeiro.v -= v;
+    else db.financeiro.s -= v;
     if(!db.financeiro.h) db.financeiro.h = [];
-    db.financeiro.h.unshift({ id: Date.now(), v, tipo, u: currentUser });
-    addLog(`Financeiro: R$ ${v}`, 'financeiro');
-    document.getElementById('finValor').value = ""; save();
+    db.financeiro.h.unshift({id: Date.now(), v, cat: catTxt, u: currentUser, jus: j||""});
+    addLog(`${catTxt}: R$ ${v}`, 'financeiro');
+    document.getElementById('finValor').value=""; save();
 }
 
+// --- TAREFAS ---
+function addTarefa() {
+    const v = document.getElementById('novaTarefa').value; if(!v) return;
+    if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
+    db.tarefas[currentDay].push({id: Date.now(), txt: v, check: false, u: currentUser});
+    addLog(`Tarefa: ${v}`, 'tarefa');
+    document.getElementById('novaTarefa').value=""; save();
+}
+
+// --- COMPRAS & WHATSAPP ---
+const catIcones = { Mercearia: "📦", Açougue: "🍖", Hortifruti: "🥕", Pets: "🐾" };
+function addCompraManual() {
+    const v = document.getElementById('compraNovoItem').value;
+    const c = document.getElementById('compraCategoria').value;
+    if(!v) return;
+    if(!db.compras) db.compras = [];
+    db.compras.push({ id: Date.now(), val: v, cat: c, check: false });
+    document.getElementById('compraNovoItem').value = ""; save();
+}
+function restaurarComprasEssenciais() {
+    const itens = [
+        {val: "Macarrão", cat: "Mercearia"}, {val: "Óleo", cat: "Mercearia"}, {val: "Pão", cat: "Mercearia"}, {val: "Filtro Café", cat: "Mercearia"}, {val: "Coca-Cola", cat: "Mercearia"},
+        {val: "Carne Moída (500g)", cat: "Açougue"}, {val: "Peito de Frango (1kg)", cat: "Açougue"},
+        {val: "Cenoura", cat: "Hortifruti"}, {val: "Abóbora", cat: "Hortifruti"}, {val: "Areia de Gato", cat: "Pets"}
+    ];
+    db.compras = itens.map(i => ({...i, id: Math.random(), check: false}));
+    save();
+}
+function shareWhatsApp() {
+    const itens = (db.compras || []).filter(i => !i.check);
+    if(!itens.length) return alert("Lista vazia!");
+    let t = `🛒 *COMPRAS - ${currentGroup.toUpperCase()}*\n\n`;
+    ["Mercearia", "Açougue", "Hortifruti", "Pets"].forEach(c => {
+        const sub = itens.filter(i => i.cat === c);
+        if(sub.length){ t += `${catIcones[c]} *${c.toUpperCase()}*\n`; sub.forEach(i => t += `• ${i.val}\n`); t += `\n`; }
+    });
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
+}
+function limparComprasTicadas() { db.compras = (db.compras || []).filter(x => !x.check); save(); }
+
+// --- AGENDA & CALENDÁRIO ---
 function addAgenda() {
     const d = document.getElementById('agendaData').value;
     const t = document.getElementById('agendaComp').value;
     if(!d || !t) return;
     if(!db.agenda) db.agenda = [];
-    db.agenda.push({ id: Date.now(), data: d, txt: t, u: currentUser });
-    addLog(`Evento: ${t}`, 'agenda');
-    document.getElementById('agendaComp').value = ""; save();
+    db.agenda.push({id: Date.now(), data: d, txt: t, u: currentUser});
+    addLog(`Agenda: ${t}`, 'agenda');
+    document.getElementById('agendaComp').value=""; save();
+}
+function toggleCalendario() {
+    const m = document.getElementById('modal-calendario');
+    m.classList.toggle('active');
+    if(m.classList.contains('active')) renderCalendario();
+}
+function renderCalendario() {
+    const container = document.getElementById('calendar-grid-container');
+    const agora = new Date();
+    const totalDias = new Date(2026, agora.getMonth()+1, 0).getDate();
+    let h = "";
+    for(let d=1; d<=totalDias; d++) {
+        const dStr = `2026-${String(agora.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const tem = (db.agenda || []).find(a => a.data === dStr);
+        h += `<div onclick="verDetalhesDia('${dStr}')" class="calendar-day ${tem?'has-event':''}"><span>${d}</span></div>`;
+    }
+    container.innerHTML = h;
+}
+function verDetalhesDia(data) {
+    const evs = (db.agenda || []).filter(a => a.data === data);
+    document.getElementById('calendar-details').innerHTML = evs.length ? evs.map(e => `<div class="card-clean p-4 border-l-4 border-indigo-400 text-xs"><b class="uppercase text-indigo-600">${e.u}</b><p class="font-bold text-slate-700">${e.txt}</p></div>`).join("") : `<p class="text-center text-xs text-slate-300">Nenhum evento neste dia.</p>`;
 }
 
-function addCompraManual() {
-    const v = document.getElementById('compraNovoItem').value; if(!v) return;
-    if(!db.compras) db.compras = [];
-    db.compras.push({ id: Date.now(), val: v, check: false });
-    save(); document.getElementById('compraNovoItem').value = "";
-}
-
-function restaurarCompras() {
-    const ess = [{val:"Leite", check: false}, {val:"Ovos", check: false}, {val:"Arroz", check: false}];
-    db.compras = ess.map(e => ({...e, id: Math.random()}));
-    save();
-}
-
-function limparComprasTicadas() { db.compras = (db.compras || []).filter(x => !x.check); save(); }
-
+// --- LAZER ---
 function addLazer() {
-    const n = document.getElementById('lazerNome').value; if(!n) return;
+    const v = document.getElementById('lazerNovo').value; if(!v) return;
     if(!db.lazer) db.lazer = [];
-    db.lazer.push({ id: Date.now(), n, cat: currentLazerCat });
-    save(); document.getElementById('lazerNome').value = "";
+    db.lazer.push({id: Date.now(), n: v, cat: currentLazerCat});
+    document.getElementById('lazerNovo').value=""; save();
 }
-
 function sortearLazer() {
-    const l = (db.lazer || []).filter(x => x.cat === currentLazerCat);
-    if(l.length < 2) return alert("Adicione mais locais!");
-    const s = l[Math.floor(Math.random()*l.length)].n;
-    alert("🎰 SORTEADO: " + s.toUpperCase());
+    const fil = (db.lazer || []).filter(x => x.cat === currentLazerCat);
+    if(!fil.length) return alert("Adicione sugestões primeiro!");
+    alert("SORTEADO: " + fil[Math.floor(Math.random()*fil.length)].n);
 }
 
-function saveUsers() {
-    db.config.user1 = document.getElementById('input-user1').value;
-    db.config.user2 = document.getElementById('input-user2').value;
-    save(); alert("Nomes atualizados!");
-}
-
+// --- UTILS ---
+function saveUsers() { db.config.user1 = document.getElementById('input-user1').value; db.config.user2 = document.getElementById('input-user2').value; save(); }
 function switchUser(u) { currentUser = u; render(); }
 function showTab(id) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -335,12 +332,15 @@ function showTab(id) {
     document.querySelectorAll('nav .nav-item').forEach(b => b.classList.remove('active-nav', 'text-slate-400'));
     document.getElementById('nav-'+id).classList.add('active-nav');
 }
+function addLog(m, c) { if(!db.logs) db.logs = []; db.logs.unshift({u: currentUser, msg: m, h: new Date().toLocaleTimeString('pt-br', {hour:'2-digit', minute:'2-digit'})}); }
 
+// --- RENDER GERAL ---
 function render() {
     document.getElementById('btn-user1').innerText = db.config.user1;
     document.getElementById('btn-user2').innerText = db.config.user2;
-    document.getElementById('btn-user1').className = currentUser===db.config.user1 ? 'px-5 py-2 rounded-full active-user-btn uppercase' : 'px-5 py-2 rounded-full uppercase text-slate-400';
-    document.getElementById('btn-user2').className = currentUser===db.config.user2 ? 'px-5 py-2 rounded-full active-user-btn uppercase' : 'px-5 py-2 rounded-full uppercase text-slate-400';
+    document.getElementById('btn-user1').className = currentUser===db.config.user1 ? 'flex-1 py-2 text-[10px] font-black rounded-xl active-user-btn uppercase' : 'flex-1 py-2 text-[10px] font-bold rounded-xl uppercase text-slate-400';
+    document.getElementById('btn-user2').className = currentUser===db.config.user2 ? 'flex-1 py-2 text-[10px] font-black rounded-xl active-user-btn uppercase' : 'flex-1 py-2 text-[10px] font-bold rounded-xl uppercase text-slate-400';
+
     document.getElementById('label-user1').innerText = db.config.user1;
     document.getElementById('label-user2').innerText = db.config.user2;
     document.getElementById('ponto-user1').innerText = db.config.p1 || 0;
@@ -349,46 +349,29 @@ function render() {
     document.getElementById('input-user2').value = db.config.user2;
 
     document.getElementById('list-dias').innerHTML = dias.map(d => `<button onclick="currentDay='${d}';render()" class="px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase transition-all ${currentDay===d?'bg-indigo-600 text-white shadow-md':'bg-white text-slate-400 border'}">${d}</button>`).join("");
-    document.getElementById('tarefasList').innerHTML = (db.tarefas[currentDay] || []).map(t => `
-        <div class="card-clean p-4 flex justify-between items-center">
-            <div class="flex flex-col"><span class="text-sm font-bold ${t.check?'riscado':''} text-slate-600">${t.txt}</span><span class="text-[8px] font-black opacity-30 uppercase">Por ${t.u}</span></div>
-            <div class="flex gap-2">
-                <button onclick="concluirTarefa(${t.id})" class="w-10 h-10 rounded-full ${t.check?'bg-emerald-50 text-emerald-500':'bg-slate-50 text-slate-200'} flex items-center justify-center">✓</button>
-                <button onclick="db.tarefas['${currentDay}']=db.tarefas['${currentDay}'].filter(x=>x.id!==${t.id});save()" class="text-slate-200 p-2">✕</button>
-            </div>
-        </div>`).join("");
+    
+    const tarefas = (db.tarefas[currentDay] || []).filter(t => t.u === currentUser);
+    document.getElementById('tarefasList').innerHTML = tarefas.map(t => `<div class="card-clean p-4 flex justify-between items-center"><span class="text-sm font-bold ${t.check?'riscado':''}">${t.txt}</span><div class="flex gap-2"><button onclick="const x=db.tarefas['${currentDay}'].find(i=>i.id===${t.id}); if(!x.check){x.check=true; if(currentUser===db.config.user1)db.config.p1+=10;else db.config.p2+=10;} save()" class="w-8 h-8 rounded-full ${t.check?'bg-emerald-100 text-emerald-600':'bg-slate-50 text-slate-300'}">✓</button><button onclick="db.tarefas['${currentDay}']=db.tarefas['${currentDay}'].filter(x=>x.id!==${t.id});save()" class="text-slate-200">✕</button></div></div>`).join("");
 
     document.getElementById('fin-salario').innerText = (db.financeiro.s || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
     document.getElementById('fin-vrava').innerText = (db.financeiro.v || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
-    document.getElementById('financeiroHistorico').innerHTML = (db.financeiro.h || []).slice(0,5).map(h => `
-        <div class="card-clean p-4 flex justify-between items-center text-[10px]">
-            <span class="font-bold text-slate-400 uppercase">${h.u}</span>
-            <span class="font-black ${h.tipo.startsWith('gas')?'text-rose-400':'text-emerald-500'}">R$ ${h.v.toFixed(2)}</span>
-        </div>`).join("");
+    document.getElementById('financeiroHistorico').innerHTML = (db.financeiro.h || []).slice(0,5).map(h => `<div class="card-clean p-4 flex justify-between items-center text-[10px]"><div class="flex flex-col"><span class="font-black text-slate-400 uppercase">${h.cat}</span><span class="text-slate-300 italic">${h.jus}</span></div><span class="font-black">R$ ${h.v.toFixed(2)}</span></div>`).join("");
 
-    document.getElementById('agendaList').innerHTML = (db.agenda || []).sort((a,b)=>new Date(a.data)-new Date(b.data)).map(a => `
-        <div class="card-clean p-5 flex justify-between items-center">
-            <div><p class="text-[9px] font-black text-indigo-400 uppercase">${a.data.split('-').reverse().join('/')}</p><p class="text-sm font-bold text-slate-600">${a.txt}</p></div>
-            <button onclick="db.agenda=db.agenda.filter(x=>x.id!==${a.id});save()" class="text-slate-200">✕</button>
-        </div>`).join("");
+    const agenda = (db.agenda || []).filter(a => a.u === currentUser).sort((a,b)=>new Date(a.data)-new Date(b.data));
+    document.getElementById('agendaList').innerHTML = agenda.slice(0,5).map(a => `<div class="card-clean p-4 flex justify-between items-center text-sm"><div><p class="text-[9px] font-black text-indigo-400 uppercase">${a.data.split('-').reverse().join('/')}</p><p class="font-bold">${a.txt}</p></div><button onclick="db.agenda=db.agenda.filter(x=>x.id!==${a.id});save()" class="text-slate-200">✕</button></div>`).join("");
 
-    document.getElementById('comprasList').innerHTML = (db.compras || []).map(i => `
-        <div onclick="const it=db.compras.find(x=>x.id===${i.id});it.check=!it.check;save()" class="card-clean p-4 flex items-center justify-between cursor-pointer">
-            <div class="flex items-center gap-3"><div class="w-5 h-5 border-2 rounded-lg ${i.check?'bg-indigo-500 border-indigo-500':'border-slate-100'} transition-all"></div><span class="text-sm font-bold ${i.check?'riscado':''} text-slate-600">${i.val}</span></div>
-            <button onclick="event.stopPropagation();db.compras=db.compras.filter(x=>x.id!==${i.id});save()" class="text-slate-200">✕</button>
-        </div>`).join("");
+    const comprasCats = ["Mercearia", "Açougue", "Hortifruti", "Pets"];
+    document.getElementById('comprasList').innerHTML = comprasCats.map(c => {
+        const itens = (db.compras || []).filter(i => i.cat === c);
+        if(!itens.length) return "";
+        return `<div><h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">${catIcones[c]} ${c}</h3><div class="space-y-2">${itens.map(i => `<div class="card-clean p-4 flex items-center justify-between"><span class="${i.check?'riscado text-slate-300':'font-bold text-sm text-slate-600'}">${i.val}</span><div class="flex gap-2"><button onclick="const x=db.compras.find(c=>c.id===${i.id});x.check=!x.check;save()" class="w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'}">✓</button><button onclick="db.compras=db.compras.filter(c=>c.id!==${i.id});save()" class="text-slate-100">✕</button></div></div>`).join("")}</div></div>`;
+    }).join("");
 
     const lzCats = ["Restaurante", "Bar", "Pizzarias", "Cinemas", "Cafés"];
     document.getElementById('lazer-tabs').innerHTML = lzCats.map(c => `<button onclick="currentLazerCat='${c}';render()" class="flex-1 py-3 px-2 text-[9px] font-black rounded-xl ${currentLazerCat===c?'bg-slate-900 text-white':'text-slate-400'} uppercase">${c}</button>`).join("");
-    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(x => x.cat === currentLazerCat).map(l => `
-        <div class="card-clean p-4 flex justify-between items-center"><span class="text-sm font-bold text-slate-600">${l.n}</span><button onclick="db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()" class="text-slate-200">✕</button></div>`).join("");
+    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(x => x.cat === currentLazerCat).map(l => `<div class="card-clean p-4 flex justify-between items-center"><span class="text-sm font-bold">${l.n}</span><button onclick="db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()" class="text-slate-200">✕</button></div>`).join("");
 
-    document.getElementById('logsDisplay').innerHTML = (db.logs || []).slice(0,10).map(log => `
-        <div class="card-clean p-4 flex gap-4 items-center text-[10px] border-l-4 border-l-indigo-50">
-            <span class="font-black text-slate-300">${log.h}</span>
-            <span class="font-bold text-indigo-400 uppercase">${log.u}:</span>
-            <span class="font-medium text-slate-500">${log.msg}</span>
-        </div>`).join("");
+    document.getElementById('logsDisplay').innerHTML = (db.logs || []).slice(0,12).map(log => `<div class="card-clean p-3 flex gap-3 items-center text-[10px] border-l-4 border-l-indigo-50"><span class="font-black text-slate-300">${log.h}</span><span class="font-bold text-indigo-400 uppercase">${log.u}:</span><span class="text-slate-500">${log.msg}</span></div>`).join("");
 }
 
 if(currentGroup) logar(currentGroup);
