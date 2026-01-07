@@ -122,7 +122,7 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Salário</p><input onchange="updateFinanca('salario', this.value)" id="in-salario" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">VR / VA</p><input onchange="updateFinanca('vr', this.value)" id="in-vr" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl col-span-2 border-l-4 border-emerald-400"><p class="text-[8px] uppercase font-bold text-slate-400">Entrada Casa</p><input onchange="updateFinanca('entradaCasa', this.value)" id="in-casa-total" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl col-span-2 border-l-4 border-emerald-400"><p class="text-[8px] uppercase font-bold text-slate-400">Entrada Casa (Reserva)</p><input onchange="updateFinanca('entradaCasa', this.value)" id="in-casa-total" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Academia</p><input onchange="updateFinanca('fixo_academia', this.value)" id="fixo-academia" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Celular</p><input onchange="updateFinanca('fixo_celular', this.value)" id="fixo-celular" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Internet</p><input onchange="updateFinanca('fixo_internet', this.value)" id="fixo-internet" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Alimentação</p><input onchange="updateFinanca('fixo_alimentacao', this.value)" id="fixo-alimentacao" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl ring-2 ring-indigo-200"><p class="text-[8px] uppercase font-black text-indigo-400">Alimentação (Desconta do VR)</p><input onchange="updateFinanca('fixo_alimentacao', this.value)" id="fixo-alimentacao" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
                     </div>
                 </div>
 
@@ -177,10 +177,11 @@
                     </div>
                 </div>
                 <div id="fin-lista-saidas" class="mt-4 space-y-4"></div>
+                <div id="extra-dash-container"></div>
             </div>
             
             <div class="card-clean p-4 bg-slate-900 text-white flex justify-between items-center">
-                <span class="text-[10px] font-black uppercase">Saldo Livre Mês</span>
+                <span class="text-[10px] font-black uppercase">Saldo Salário Livre</span>
                 <span id="fin-saldo-final" class="text-xl font-bold">R$ 0,00</span>
             </div>
         </section>
@@ -210,7 +211,7 @@
         </section>
 
         <section id="content-lazer" class="tab-content space-y-4 text-center">
-             <button onclick="sortearLazer()" class="w-full bg-indigo-50 border-2 border-dashed border-indigo-200 text-indigo-600 p-6 rounded-3xl font-black uppercase text-xs mb-4">🎰 Sortear Sugestão</button>
+             <button onclick="sortearLazer()" class="w-full bg-indigo-600 text-white p-6 rounded-3xl font-black uppercase text-xs mb-4 shadow-xl active:scale-95 transition-all">🎰 Sortear Qualquer Lugar (No Orçamento)</button>
             <div id="lazer-tabs" class="flex gap-1 bg-white p-1.5 rounded-2xl border overflow-x-auto no-scrollbar"></div>
             <div class="card-clean p-4 bg-indigo-50/50 border-indigo-100">
                 <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Saldo Lazer em Caixa (Financeiro)</p>
@@ -221,7 +222,7 @@
                     <input id="lazerNovo" placeholder="Sugestão de local..." class="flex-[2] text-sm font-bold outline-none px-4 bg-slate-50 rounded-xl">
                     <input id="lazerCusto" type="number" placeholder="Custo Est." class="flex-1 text-sm font-bold outline-none px-4 bg-slate-50 rounded-xl text-center">
                 </div>
-                <button onclick="addLazer()" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-black uppercase text-[10px]">Adicionar Sugestão</button>
+                <button onclick="addLazer()" class="w-full bg-slate-900 text-white p-4 rounded-xl font-black uppercase text-[10px]">Adicionar Sugestão na Categoria</button>
             </div>
             <div id="lazerList" class="space-y-2 text-left"></div>
         </section>
@@ -327,13 +328,13 @@ function showTab(id) {
 
 function switchUser(u) { currentUser = u; render(); }
 
-// FUNÇÕES DE DADOS
 function addTarefa() {
     const v = document.getElementById('novaTarefa').value; if(!v) return;
     if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
     db.tarefas[currentDay].push({id: Date.now(), txt: v, check: false, u: currentUser});
     addLog(`Tarefa: ${v}`, 'tar'); document.getElementById('novaTarefa').value=""; save();
 }
+
 function toggleTarefa(id) {
     const t = db.tarefas[currentDay].find(x => x.id === id);
     if(t) {
@@ -342,12 +343,14 @@ function toggleTarefa(id) {
         save();
     }
 }
+
 function updateFinanca(campo, valor) {
     if(!db.financasMensal[currentMes]) db.financasMensal[currentMes] = {};
     if(!db.financasMensal[currentMes][currentUser]) db.financasMensal[currentMes][currentUser] = {};
     db.financasMensal[currentMes][currentUser][campo] = isNaN(parseFloat(valor)) ? valor : parseFloat(valor);
     save();
 }
+
 function addSaidaVariavel() {
     const d = document.getElementById('finOutDesc').value;
     const v = parseFloat(document.getElementById('finOutValor').value);
@@ -357,6 +360,7 @@ function addSaidaVariavel() {
     db.financasMensal[currentMes][currentUser].saidas.push({id: Date.now(), d, v, cat: c});
     document.getElementById('finOutDesc').value = ""; document.getElementById('finOutValor').value = ""; save();
 }
+
 function addAgenda() {
     const d = document.getElementById('agendaData').value;
     const t = document.getElementById('agendaComp').value;
@@ -365,7 +369,9 @@ function addAgenda() {
     db.agenda.push({id: Date.now(), data: d, txt: t, u: currentUser});
     addLog(`Agenda: ${t}`, 'age'); document.getElementById('agendaComp').value=""; save();
 }
+
 function toggleCalendario() { document.getElementById('modal-calendario').classList.toggle('active'); if(document.getElementById('modal-calendario').classList.contains('active')) renderCalendario(); }
+
 function renderCalendario() {
     const container = document.getElementById('calendar-grid-container');
     const agora = new Date();
@@ -378,10 +384,12 @@ function renderCalendario() {
     }
     container.innerHTML = h;
 }
+
 function verDetalhesDia(data) {
     const evs = (db.agenda || []).filter(a => a.data === data);
     document.getElementById('calendar-details').innerHTML = evs.length ? evs.map(e => `<div class=\"card-clean p-4 border-l-4 border-indigo-400 text-xs font-bold flex justify-between\"><span>${e.txt}</span><button onclick=\"db.agenda=db.agenda.filter(x=>x.id!==${e.id});save();verDetalhesDia('${data}')\" class=\"text-slate-300\">✕</button></div>`).join("") : `<p class=\"text-center text-xs text-slate-300\">Vazio</p>`;
 }
+
 function addCompraManual() {
     const v = document.getElementById('compraNovoItem').value;
     const c = document.getElementById('compraCategoria').value;
@@ -390,6 +398,7 @@ function addCompraManual() {
     db.compras.push({ id: Date.now(), val: v, cat: c, check: false });
     save(); document.getElementById('compraNovoItem').value = "";
 }
+
 function shareWhatsApp() {
     const itens = (db.compras || []).filter(i => !i.check);
     if(!itens.length) return alert("Vazio");
@@ -402,11 +411,13 @@ function shareWhatsApp() {
     });
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
 }
+
 function restaurarComprasEssenciais() {
     if(!db.compras) db.compras = [];
     LISTA_ESSENCIAL.forEach(item => { if(!db.compras.some(c => c.val === item.val && !c.check)) db.compras.push({...item, id: Date.now()+Math.random()}); });
     save();
 }
+
 function addLazer() {
     const v = document.getElementById('lazerNovo').value;
     const c = parseFloat(document.getElementById('lazerCusto').value) || 0;
@@ -417,28 +428,34 @@ function addLazer() {
 }
 
 function sortearLazer() {
+    // Busca o saldo de lazer atual do usuário logado
     const f = (db.financasMensal[currentMes] && db.financasMensal[currentMes][currentUser]) || {};
-    const saldoLazerDisponivel = (f.lazerEntrada || 0) - (f.lazerSaida || 0);
+    const saldoLazerDisponivel = (parseFloat(f.lazerEntrada) || 0) - (parseFloat(f.lazerSaida) || 0);
 
-    const sugestoesCoerentes = (db.lazer || []).filter(x => {
-        return x.cat === currentLazerCat && x.vlr <= saldoLazerDisponivel;
-    });
+    // FILTRO GLOBAL: Busca em TODAS as categorias de lazer cadastradas
+    const todasSugestoes = db.lazer || [];
+    const sugestoesNoOrcamento = todasSugestoes.filter(item => item.vlr <= saldoLazerDisponivel);
 
-    if (sugestoesCoerentes.length === 0) {
+    if (sugestoesNoOrcamento.length === 0) {
         if (saldoLazerDisponivel <= 0) {
-            return alert("❌ Saldo de Lazer insuficiente no Financeiro!");
+            return alert(`❌ Saldo insuficiente!\nSeu caixa de lazer está zerado ou negativo.`);
+        } else {
+            return alert(`⚠️ Nenhuma sugestão encontrada que custe menos de R$ ${saldoLazerDisponivel.toFixed(2)}.`);
         }
-        return alert(`⚠️ Nenhuma opção em "${currentLazerCat}" custa menos que o seu saldo atual (R$ ${saldoLazerDisponivel.toFixed(2)}).`);
     }
 
-    const sorteado = sugestoesCoerentes[Math.floor(Math.random() * sugestoesCoerentes.length)];
-    alert(`🎰 SUGESTÃO COERENTE:\n\n🍴 Local: ${sorteado.n}\n💰 Custo Est.: R$ ${sorteado.vlr.toFixed(2)}\n\n(Seu saldo atual: R$ ${saldoLazerDisponivel.toFixed(2)})`);
+    // Sorteio aleatório entre as que cabem no bolso
+    const sorteado = sugestoesNoOrcamento[Math.floor(Math.random() * sugestoesNoOrcamento.length)];
+    
+    // Feedback visual
+    alert(`🎰 SORTEIO DE LAZER 🎰\n\n🍴 Local: ${sorteado.n}\n📂 Categoria: ${sorteado.cat}\n💰 Custo Est.: R$ ${sorteado.vlr.toFixed(2)}\n\n(Baseado no seu saldo de R$ ${saldoLazerDisponivel.toFixed(2)})`);
 }
 
 function addLog(m, type) { 
     if(!db.logs) db.logs = [];
     db.logs.unshift({u: currentUser, msg: m, h: new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit'}), type}); 
 }
+
 function saveUsers() { db.config.user1 = document.getElementById('input-user1').value; db.config.user2 = document.getElementById('input-user2').value; save(); location.reload(); }
 
 function render() {
@@ -495,10 +512,33 @@ function render() {
             `).join("")}
         </div>
     `).join("");
-    
-    const totalSaidasVar = saidasVar.reduce((a,b)=>a+parseFloat(b.v),0);
-    const totalLivre = (f.salario||0) + (f.vr||0) + (f.entradaCasa||0) - (f.fixo_academia||0) - (f.fixo_celular||0) - (f.fixo_internet||0) - (f.fixo_alimentacao||0) - (f.caixinhaValor||0) - (f.lazerEntrada||0) - totalSaidasVar;
-    document.getElementById('fin-saldo-final').innerText = totalLivre.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+
+    const totalSaidasVar = saidasVar.reduce((a, b) => a + parseFloat(b.v), 0);
+    const totalLivre = (f.salario || 0) 
+                       - (f.fixo_academia || 0) 
+                       - (f.fixo_celular || 0) 
+                       - (f.fixo_internet || 0) 
+                       - (f.caixinhaValor || 0) 
+                       - (f.lazerEntrada || 0) 
+                       - totalSaidasVar;
+
+    const vrFinal = (f.vr || 0) - (f.fixo_alimentacao || 0);
+
+    document.getElementById('fin-saldo-final').innerText = totalLivre.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+
+    document.getElementById('extra-dash-container').innerHTML = `
+        <div class="grid grid-cols-2 gap-2 mt-4">
+            <div class="bg-indigo-900 p-3 rounded-2xl border border-indigo-700">
+                <p class="text-[8px] font-black text-indigo-300 uppercase">VR/VA Disponível</p>
+                <p class="text-sm font-bold text-white">${vrFinal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+                <p class="text-[7px] text-indigo-400 italic">Descontado do Fixo Alimentação</p>
+            </div>
+            <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+                <p class="text-[8px] font-black text-indigo-600 uppercase">Reserva Casa</p>
+                <p class="text-sm font-bold text-indigo-700">${(f.entradaCasa || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
+            </div>
+        </div>
+    `;
 
     const comps = db.compras || [];
     const categories = [...new Set(comps.map(i => i.cat))];
@@ -509,7 +549,7 @@ function render() {
                 <div class=\"card-clean p-4 flex items-center justify-between\">
                     <span class=\"${i.check?'riscado':''} font-bold text-sm\">${i.val}</span>
                     <div class=\"flex gap-2\">
-                        <button onclick=\"db.compras.find(c=>c.id===${i.id}).check=!i.check;save()\" class=\"w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'} text-[10px]\">✓</button>
+                        <button onclick=\"db.compras.find(c=>c.id===${i.id}).check=!i.check;save()\" class=\"w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'}\">✓</button>
                         <button onclick=\"db.compras=db.compras.filter(c=>c.id!==${i.id});save()\" class=\"text-rose-300\">🗑</button>
                     </div>
                 </div>
@@ -521,14 +561,11 @@ function render() {
     document.getElementById('lazer-tabs').innerHTML = lzCats.map(c => `<button onclick=\"currentLazerCat='${c}';render()\" class=\"flex-1 py-3 px-2 text-[9px] font-black rounded-xl ${currentLazerCat===c?'bg-slate-900 text-white':'text-slate-400'} uppercase\">${c}</button>`).join("");
     document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(x => x.cat === currentLazerCat).map(l => `<div class=\"card-clean p-4 flex justify-between items-center\"><div><p class=\"text-sm font-bold\">${l.n}</p><p class=\"text-[10px] text-slate-400\">R$ ${l.vlr}</p></div><button onclick=\"db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()\" class=\"text-slate-200\">✕</button></div>`).join("");
     
-    const verbaLazer = parseFloat(f.lazerEntrada) || 0;
-    const gastoLazer = parseFloat(f.lazerSaida) || 0;
-    const saldoLazerCalculado = verbaLazer - gastoLazer;
+    const saldoLazerCalculado = (parseFloat(f.lazerEntrada) || 0) - (parseFloat(f.lazerSaida) || 0);
     const elLazerDisplay = document.getElementById('lazer-orcamento-display');
     if (elLazerDisplay) {
         elLazerDisplay.innerText = saldoLazerCalculado.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-        if (saldoLazerCalculado < 0) elLazerDisplay.className = "text-xl font-black text-rose-600 mt-1";
-        else elLazerDisplay.className = "text-xl font-black text-indigo-700 mt-1";
+        elLazerDisplay.className = saldoLazerCalculado < 0 ? "text-xl font-black text-rose-600 mt-1" : "text-xl font-black text-indigo-700 mt-1";
     }
 
     document.getElementById('logsDisplay').innerHTML = (db.logs || []).slice(0,10).map(l => `<div class=\"card-clean p-3 text-[10px] font-bold text-slate-400 uppercase\">${l.h} - ${l.u}: ${l.msg}</div>`).join("");
