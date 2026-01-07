@@ -22,7 +22,6 @@
         .main-container { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 1.25rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Calendário */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border-radius: 12px; background: #fff; border: 1px solid #f1f5f9; cursor: pointer; }
         .calendar-day.has-event { border: 2px solid var(--brand-color); background: #f5f3ff; color: var(--brand-color); }
@@ -93,7 +92,6 @@
 
         <section id="content-agenda" class="tab-content space-y-4">
              <button onclick="toggleCalendario()" class="w-full bg-white border p-4 rounded-2xl font-black text-indigo-600 text-[10px] uppercase shadow-sm">📅 Ver Calendário Completo</button>
-            
             <div class="card-clean p-6 space-y-3">
                 <input type="date" id="agendaData" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
                 <input id="agendaComp" placeholder="O que agendar?" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
@@ -103,6 +101,8 @@
         </section>
 
         <section id="content-financeiro" class="tab-content space-y-4">
+            <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="fin-meses-nav"></div>
+
             <div class="card-clean p-6 space-y-6">
                 <div class="text-center">
                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dashboard de</p>
@@ -110,46 +110,56 @@
                 </div>
 
                 <div class="space-y-3">
-                    <h3 class="text-[10px] font-black uppercase text-emerald-600 flex items-center gap-2">⬇️ Entradas Previstas</h3>
+                    <h3 class="text-[10px] font-black uppercase text-emerald-600 flex items-center gap-2">⬇️ Entradas</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Salário</p><input onchange="updateFinanca('salario', this.value)" id="in-salario" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">VR / VA</p><input onchange="updateFinanca('vr', this.value)" id="in-vr" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Entrada Casa</p><input onchange="updateFinanca('casa', this.value)" id="in-casa" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl border border-indigo-100"><p class="text-[8px] uppercase font-bold text-indigo-400">Destinado Lazer</p><input onchange="updateFinanca('lazer', this.value)" id="in-lazer" type="number" class="bg-transparent w-full font-bold outline-none text-indigo-600" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl col-span-2 border-l-4 border-emerald-400"><p class="text-[8px] uppercase font-bold text-slate-400">Entrada Casa</p><input onchange="updateFinanca('entradaCasa', this.value)" id="in-casa-total" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
                     </div>
                 </div>
 
                 <hr class="border-dashed">
 
                 <div class="space-y-3">
-                    <h3 class="text-[10px] font-black uppercase text-rose-500 flex items-center gap-2">⬆️ Custos Fixos</h3>
+                    <h3 class="text-[10px] font-black uppercase text-rose-500 flex items-center gap-2">📌 Custos Fixos</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Academia</p><input onchange="updateFinanca('academia', this.value)" id="out-academia" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Celular</p><input onchange="updateFinanca('celular', this.value)" id="out-celular" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Internet</p><input onchange="updateFinanca('internet', this.value)" id="out-internet" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Alimentação</p><input onchange="updateFinanca('alimentacao', this.value)" id="out-alimentacao" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl col-span-2"><p class="text-[8px] uppercase font-bold text-slate-400">Outros</p><input onchange="updateFinanca('outros', this.value)" id="out-outros" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Academia</p><input onchange="updateFinanca('fixo_academia', this.value)" id="fixo-academia" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Celular</p><input onchange="updateFinanca('fixo_celular', this.value)" id="fixo-celular" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Internet</p><input onchange="updateFinanca('fixo_internet', this.value)" id="fixo-internet" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Alimentação</p><input onchange="updateFinanca('fixo_alimentacao', this.value)" id="fixo-alimentacao" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
+                    <input onchange="updateFinanca('caixinhaNome', this.value)" id="fin-caixinha-nome" placeholder="Nome da Caixinha" class="bg-transparent text-[10px] font-black uppercase text-indigo-400 outline-none w-full mb-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-indigo-600 font-bold">R$</span>
+                        <input onchange="updateFinanca('caixinhaValor', this.value)" id="fin-caixinha-valor" type="number" class="bg-transparent w-full font-black text-indigo-700 outline-none text-lg" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-100">
+                    <p class="text-[9px] font-black text-amber-600 uppercase mb-2">💰 Fluxo Lazer do Mês</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><p class="text-[8px] font-bold text-amber-400 uppercase">Verba Lazer (+)</p><input onchange="updateFinanca('lazerEntrada', this.value)" id="fin-lazer-in" type="number" class="bg-transparent font-bold text-amber-700 outline-none w-full" placeholder="R$ 0"></div>
+                        <div><p class="text-[8px] font-bold text-rose-400 uppercase">Gasto Lazer (-)</p><input onchange="updateFinanca('lazerSaida', this.value)" id="fin-lazer-out" type="number" class="bg-transparent font-bold text-rose-700 outline-none w-full" placeholder="R$ 0"></div>
                     </div>
                 </div>
             </div>
+
+            <div class="card-clean p-4 bg-white">
+                <p class="text-[9px] font-black text-slate-400 uppercase mb-2">💸 Outras Saídas</p>
+                <div class="flex gap-2">
+                    <input id="finOutDesc" placeholder="Descrição" class="flex-1 bg-slate-50 p-2 rounded-lg text-sm outline-none font-bold">
+                    <input id="finOutValor" type="number" placeholder="R$" class="w-20 bg-slate-50 p-2 rounded-lg text-sm outline-none font-bold">
+                    <button onclick="addSaidaVariavel()" class="bg-slate-900 text-white px-4 rounded-lg font-bold">+</button>
+                </div>
+                <div id="fin-lista-saidas" class="mt-3 space-y-2"></div>
+            </div>
             
             <div class="card-clean p-4 bg-slate-900 text-white flex justify-between items-center">
-                <span class="text-[10px] font-black uppercase">Saldo Previsto (Livre)</span>
+                <span class="text-[10px] font-black uppercase">Saldo Livre Mês</span>
                 <span id="fin-saldo-final" class="text-xl font-bold">R$ 0,00</span>
-            </div>
-            
-            <div class="text-center mt-4">
-                 <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2">Histórico de Movimentações</p>
-                 <div id="financeiroHistorico" class="space-y-2"></div>
-            </div>
-
-            <div class="card-clean p-4 mt-4 bg-yellow-50 border-yellow-100">
-                <p class="text-[9px] font-black text-yellow-600 uppercase mb-2">Registro Avulso (Log)</p>
-                <div class="flex gap-2">
-                    <input id="finValorAvulso" type="number" placeholder="Valor" class="w-24 bg-white p-2 rounded-lg text-sm outline-none">
-                    <input id="finDescAvulso" placeholder="Descrição" class="flex-1 bg-white p-2 rounded-lg text-sm outline-none">
-                    <button onclick="addFinanceiroAvulso()" class="bg-yellow-500 text-white p-2 rounded-lg font-bold">OK</button>
-                </div>
             </div>
         </section>
 
@@ -174,19 +184,15 @@
                 </div>
                 <button onclick="addCompraManual()" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-black uppercase text-[10px]">Adicionar</button>
             </div>
-            <div id="comprasList" class="space-y-3"></div>
-        </section>
+            <div id="comprasList" class="space-y-6"></div> </section>
 
         <section id="content-lazer" class="tab-content space-y-4 text-center">
              <button onclick="sortearLazer()" class="w-full bg-indigo-50 border-2 border-dashed border-indigo-200 text-indigo-600 p-6 rounded-3xl font-black uppercase text-xs mb-4">🎰 Sortear Sugestão</button>
-            
             <div id="lazer-tabs" class="flex gap-1 bg-white p-1.5 rounded-2xl border overflow-x-auto no-scrollbar"></div>
-            
             <div class="card-clean p-4 bg-indigo-50/50 border-indigo-100">
-                <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Orçamento Lazer (Definido no Financeiro)</p>
+                <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Saldo Lazer em Caixa (Financeiro)</p>
                 <p id="lazer-orcamento-display" class="text-xl font-black text-indigo-700 mt-1">R$ 0,00</p>
             </div>
-            
             <div class="card-clean p-4 space-y-3">
                 <div class="flex gap-2">
                     <input id="lazerNovo" placeholder="Sugestão de local..." class="flex-[2] text-sm font-bold outline-none px-4 bg-slate-50 rounded-xl">
@@ -203,7 +209,6 @@
                 <button onclick="filterLogs('tar')" class="bg-white border text-slate-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Tarefas</button>
                 <button onclick="filterLogs('age')" class="bg-white border text-slate-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Agenda</button>
                 <button onclick="filterLogs('fin')" class="bg-white border text-slate-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Finanças</button>
-                <button onclick="filterLogs('com')" class="bg-white border text-slate-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Compras</button>
             </div>
             <div id="logsDisplay" class="space-y-2"></div>
         </section>
@@ -228,73 +233,28 @@
 </div>
 
 <script>
-// --- CONFIG & FIREBASE ---
 const firebaseConfig = { apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo", authDomain: "home-2-f8b01.firebaseapp.com", databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com", projectId: "home-2-f8b01" };
 firebase.initializeApp(firebaseConfig);
 
 const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-function getTodayName() {
-    let idx = new Date().getDay();
-    return dias[idx === 0 ? 6 : idx - 1];
-}
+const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+function getTodayName() { let idx = new Date().getDay(); return dias[idx === 0 ? 6 : idx - 1]; }
 
 let currentGroup = localStorage.getItem('py_v26_final');
 let currentUser = "";
 let currentDay = getTodayName();
+let currentMes = meses[new Date().getMonth()];
 let currentLazerCat = "Restaurante";
 let currentLogFilter = 'all';
 
-// Estrutura inicial (Atualizada para suportar novo financeiro)
-let db = { 
-    config: { user1: "Usuário 1", user2: "Usuário 2", p1: 0, p2: 0 }, 
-    tarefas: {},
-    financas: {}, // Nova estrutura: financas[user] = { salario: 0, vr: 0... }
-    lazer: [], 
-    compras: [], 
-    agenda: [], 
-    logs: [] 
-};
+let db = { config: { user1: "Usuário 1", user2: "Usuário 2", p1: 0, p2: 0 }, tarefas: {}, financasMensal: {}, lazer: [], compras: [], agenda: [], logs: [] };
 
-// --- LISTA ESSENCIAL COMPLETA ---
 const LISTA_ESSENCIAL = [
-    // Hortifruti
     {val:"Arroz", cat:"Mercearia"}, {val:"Feijão", cat:"Mercearia"}, {val:"Batata", cat:"Hortifruti"}, {val:"Cebola", cat:"Hortifruti"}, 
-    {val:"Alho", cat:"Hortifruti"}, {val:"Tomate", cat:"Hortifruti"}, {val:"Cenoura", cat:"Hortifruti"}, {val:"Banana", cat:"Hortifruti"}, 
-    {val:"Maçã", cat:"Hortifruti"}, {val:"Laranja", cat:"Hortifruti"}, {val:"Limão", cat:"Hortifruti"}, {val:"Alface", cat:"Hortifruti"},
-    // Proteínas
-    {val:"Frango", cat:"Açougue"}, {val:"Carne moída", cat:"Açougue"}, {val:"Ovos", cat:"Açougue"}, {val:"Peixe", cat:"Açougue"}, {val:"Linguiça/Salsicha", cat:"Açougue"},
-    // Padaria
-    {val:"Pão francês/forma", cat:"Padaria"}, {val:"Macarrão", cat:"Padaria"}, {val:"Farinha trigo", cat:"Padaria"}, {val:"Farinha mandioca/fubá", cat:"Padaria"},
-    // Mercearia
-    {val:"Óleo/Azeite", cat:"Mercearia"}, {val:"Sal", cat:"Mercearia"}, {val:"Açúcar", cat:"Mercearia"}, {val:"Café", cat:"Mercearia"}, 
-    {val:"Leite", cat:"Laticínios"}, {val:"Molho tomate", cat:"Mercearia"}, {val:"Caldo carne/frango", cat:"Mercearia"}, {val:"Vinagre", cat:"Mercearia"},
-    // Laticínios
-    {val:"Queijo", cat:"Laticínios"}, {val:"Presunto", cat:"Laticínios"}, {val:"Iogurte", cat:"Laticínios"},
-    // Limpeza
-    {val:"Detergente", cat:"Limpeza"}, {val:"Sabão pó/líquido", cat:"Limpeza"}, {val:"Amaciante", cat:"Limpeza"}, {val:"Desinfetante", cat:"Limpeza"}, 
-    {val:"Esponja", cat:"Limpeza"}, {val:"Papel toalha", cat:"Limpeza"},
-    // Higiene
-    {val:"Papel higiênico", cat:"Higiene"}, {val:"Creme dental", cat:"Higiene"}, {val:"Escova de dente", cat:"Higiene"}, {val:"Sabonete", cat:"Higiene"}, 
-    {val:"Shampoo", cat:"Higiene"}, {val:"Condicionador", cat:"Higiene"}
+    {val:"Frango", cat:"Açougue"}, {val:"Carne moída", cat:"Açougue"}, {val:"Ovos", cat:"Açougue"}, {val:"Pão", cat:"Padaria"},
+    {val:"Detergente", cat:"Limpeza"}, {val:"Papel higiênico", cat:"Higiene"}, {val:"Sabão pó", cat:"Limpeza"}
 ];
 
-// --- LOGICA RESET DIARIO ---
-function checkDailyReset() {
-    const hoje = new Date().toLocaleDateString('pt-br');
-    const ultimaData = localStorage.getItem('py_last_reset');
-    if (ultimaData !== hoje) {
-        db.config.p1 = 0; db.config.p2 = 0;
-        if (db.tarefas) {
-            Object.keys(db.tarefas).forEach(d => {
-                if(Array.isArray(db.tarefas[d])) db.tarefas[d].forEach(t => t.check = false);
-            });
-        }
-        localStorage.setItem('py_last_reset', hoje);
-        save();
-    }
-}
-
-// --- AUTH ---
 function executarAuth() {
     const g = document.getElementById('auth-nome').value.trim().toLowerCase().replace('@','');
     const s = document.getElementById('auth-senha').value.trim();
@@ -302,12 +262,8 @@ function executarAuth() {
     const ref = firebase.database().ref('v26_final/' + g);
     ref.once('value', snap => {
         if(snap.exists()) {
-            const d = snap.val();
-            if(d.senha === s) logar(g);
-            else alert("Senha incorreta");
-        } else {
-            ref.set({...db, senha: s}).then(() => logar(g));
-        }
+            if(snap.val().senha === s) logar(g); else alert("Senha incorreta");
+        } else { ref.set({...db, senha: s}).then(() => logar(g)); }
     });
 }
 
@@ -316,26 +272,11 @@ function logar(g) {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('main-app').classList.remove('hidden');
     document.getElementById('display-grupo').innerText = "@" + g.toUpperCase();
-    
     firebase.database().ref('v26_final/'+g).on('value', snap => {
         if(snap.exists()){
-            let val = snap.val();
-            // Correções de estrutura
-            if(!val.tarefas) val.tarefas = {};
-            if(!val.financas) val.financas = {}; // Nova estrutura financeira
-            if(!val.lazer) val.lazer = [];
-            if(!val.agenda) val.agenda = [];
-            if(!val.compras) val.compras = [];
-            if(!val.logs) val.logs = [];
-            
-            db = val;
+            db = snap.val();
+            if(!db.financasMensal) db.financasMensal = {};
             if(!currentUser) currentUser = db.config.user1;
-            
-            // Inicializar estrutura financeira do usuário se não existir
-            if(!db.financas[db.config.user1]) db.financas[db.config.user1] = {};
-            if(!db.financas[db.config.user2]) db.financas[db.config.user2] = {};
-
-            checkDailyReset();
             render();
         }
     });
@@ -349,65 +290,52 @@ function showTab(id) {
     document.getElementById('content-'+id).classList.add('active');
     document.querySelectorAll('nav .nav-item').forEach(b => b.classList.remove('active-nav', 'text-slate-400'));
     document.getElementById('nav-'+id).classList.add('active-nav');
-    if(id === 'casa') { currentDay = getTodayName(); render(); } // Garante dia atual ao voltar
+    render();
 }
+
 function switchUser(u) { currentUser = u; render(); }
 
-// --- TAREFAS ---
+// TAREFAS
 function addTarefa() {
     const v = document.getElementById('novaTarefa').value; if(!v) return;
     if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
     db.tarefas[currentDay].push({id: Date.now(), txt: v, check: false, u: currentUser});
-    addLog(`Tarefa: ${v}`, 'tar');
-    document.getElementById('novaTarefa').value=""; save();
+    addLog(`Tarefa: ${v}`, 'tar'); document.getElementById('novaTarefa').value=""; save();
 }
 function toggleTarefa(id) {
-    if (!db.tarefas[currentDay]) return;
     const t = db.tarefas[currentDay].find(x => x.id === id);
     if(t) {
-        if(!t.check) {
-            t.check = true;
-            if(currentUser === db.config.user1) db.config.p1 += 10; else db.config.p2 += 10;
-        } else { t.check = false; }
+        if(!t.check) { t.check = true; if(currentUser === db.config.user1) db.config.p1 += 10; else db.config.p2 += 10; }
+        else { t.check = false; }
         save();
     }
 }
 
-// --- FINANCEIRO (NOVO DASHBOARD) ---
+// FINANCEIRO
 function updateFinanca(campo, valor) {
-    // Salva diretamente na estrutura do usuário
-    if(!db.financas[currentUser]) db.financas[currentUser] = {};
-    db.financas[currentUser][campo] = parseFloat(valor) || 0;
-    save();
-    // Não gera log para edição de orçamento, apenas movimentação
-}
-
-function addFinanceiroAvulso() {
-    const v = parseFloat(document.getElementById('finValorAvulso').value);
-    const d = document.getElementById('finDescAvulso').value;
-    if(!v || !d) return;
-    addLog(`Finanças: R$ ${v} (${d})`, 'fin');
-    if(!db.financas.historico) db.financas.historico = [];
-    db.financas.historico.unshift({v, d, u: currentUser, date: new Date().toLocaleDateString()});
-    document.getElementById('finValorAvulso').value = "";
-    document.getElementById('finDescAvulso').value = "";
+    if(!db.financasMensal[currentMes]) db.financasMensal[currentMes] = {};
+    if(!db.financasMensal[currentMes][currentUser]) db.financasMensal[currentMes][currentUser] = {};
+    db.financasMensal[currentMes][currentUser][campo] = isNaN(parseFloat(valor)) ? valor : parseFloat(valor);
     save();
 }
+function addSaidaVariavel() {
+    const d = document.getElementById('finOutDesc').value;
+    const v = parseFloat(document.getElementById('finOutValor').value);
+    if(!d || !v) return;
+    if(!db.financasMensal[currentMes][currentUser].saidas) db.financasMensal[currentMes][currentUser].saidas = [];
+    db.financasMensal[currentMes][currentUser].saidas.push({id: Date.now(), d, v});
+    document.getElementById('finOutDesc').value = ""; document.getElementById('finOutValor').value = ""; save();
+}
 
-// --- AGENDA ---
+// AGENDA
 function addAgenda() {
     const d = document.getElementById('agendaData').value;
     const t = document.getElementById('agendaComp').value;
     if(!d || !t) return;
-    if(!db.agenda) db.agenda = [];
     db.agenda.push({id: Date.now(), data: d, txt: t, u: currentUser});
-    addLog(`Agenda: ${t} (${d})`, 'age');
-    document.getElementById('agendaComp').value=""; save();
+    addLog(`Agenda: ${t}`, 'age'); document.getElementById('agendaComp').value=""; save();
 }
-function toggleCalendario() {
-    document.getElementById('modal-calendario').classList.toggle('active');
-    if(document.getElementById('modal-calendario').classList.contains('active')) renderCalendario();
-}
+function toggleCalendario() { document.getElementById('modal-calendario').classList.toggle('active'); if(document.getElementById('modal-calendario').classList.contains('active')) renderCalendario(); }
 function renderCalendario() {
     const container = document.getElementById('calendar-grid-container');
     const agora = new Date();
@@ -422,150 +350,122 @@ function renderCalendario() {
 }
 function verDetalhesDia(data) {
     const evs = (db.agenda || []).filter(a => a.data === data);
-    document.getElementById('calendar-details').innerHTML = evs.length ? evs.map(e => `<div class="card-clean p-4 border-l-4 border-indigo-400 text-xs font-bold uppercase flex justify-between"><span>${e.txt}</span><button onclick="deletarAgenda(${e.id}, '${data}')" class="text-slate-300">✕</button></div>`).join("") : `<p class="text-center text-xs text-slate-300">Vazio</p>`;
+    document.getElementById('calendar-details').innerHTML = evs.length ? evs.map(e => `<div class="card-clean p-4 border-l-4 border-indigo-400 text-xs font-bold flex justify-between"><span>${e.txt}</span><button onclick="db.agenda=db.agenda.filter(x=>x.id!==${e.id});save();verDetalhesDia('${data}')" class="text-slate-300">✕</button></div>`).join("") : `<p class="text-center text-xs text-slate-300">Vazio</p>`;
 }
-function deletarAgenda(id, data) { db.agenda = db.agenda.filter(x => x.id !== id); save(); verDetalhesDia(data); renderCalendario(); }
 
-// --- COMPRAS ---
+// COMPRAS (Com Lógica de Categorias Reativada)
 function addCompraManual() {
     const v = document.getElementById('compraNovoItem').value;
     const c = document.getElementById('compraCategoria').value;
     if(!v) return;
-    if(!db.compras) db.compras = [];
     db.compras.push({ id: Date.now(), val: v, cat: c, check: false });
-    addLog(`Compra: ${v}`, 'com');
-    document.getElementById('compraNovoItem').value = ""; save();
+    save(); document.getElementById('compraNovoItem').value = "";
 }
 function shareWhatsApp() {
     const itens = (db.compras || []).filter(i => !i.check);
     if(!itens.length) return alert("Vazio");
     let t = `🛒 *LISTA DE COMPRAS*\n\n`;
-    itens.forEach(i => t += `• ${i.val} (${i.cat})\n`);
+    const cats = [...new Set(itens.map(i => i.cat))];
+    cats.forEach(c => {
+        t += `*${c.toUpperCase()}*\n`;
+        itens.filter(i => i.cat === c).forEach(i => t += `• ${i.val}\n`);
+        t += `\n`;
+    });
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
 }
 function restaurarComprasEssenciais() {
-    if(!db.compras) db.compras = [];
-    // Adiciona apenas se não existir (evita duplicatas óbvias pelo nome)
-    LISTA_ESSENCIAL.forEach(item => {
-        const existe = db.compras.some(c => c.val === item.val && !c.check);
-        if(!existe) {
-            db.compras.push({ ...item, id: Date.now() + Math.random(), check: false });
-        }
-    });
+    LISTA_ESSENCIAL.forEach(item => { if(!db.compras.some(c => c.val === item.val && !c.check)) db.compras.push({...item, id: Date.now()+Math.random()}); });
     save();
-    alert("Itens essenciais adicionados!");
 }
 
-// --- LAZER ---
+// LAZER
 function addLazer() {
     const v = document.getElementById('lazerNovo').value;
     const c = parseFloat(document.getElementById('lazerCusto').value) || 0;
     if(!v) return;
-    if(!db.lazer) db.lazer = [];
     db.lazer.push({id: Date.now(), n: v, vlr: c, cat: currentLazerCat});
-    document.getElementById('lazerNovo').value = "";
-    document.getElementById('lazerCusto').value = "";
-    save();
+    save(); document.getElementById('lazerNovo').value = ""; document.getElementById('lazerCusto').value = "";
 }
 function sortearLazer() {
     const fil = (db.lazer || []).filter(x => x.cat === currentLazerCat);
-    if(!fil.length) return alert("Vazio nesta categoria");
+    if(!fil.length) return alert("Vazio");
     const s = fil[Math.floor(Math.random()*fil.length)];
-    alert(`🎰 SUGESTÃO SORTEADA:\n\n${s.n}\n(Custo: R$ ${s.vlr})`);
+    alert(`🎰 SUGESTÃO: ${s.n} (R$ ${s.vlr})`);
 }
 
-// --- LOGS ---
-function addLog(m, type) {
-    if(!db.logs) db.logs = [];
-    const h = new Date().toLocaleTimeString('pt-br', {hour:'2-digit', minute:'2-digit'});
-    db.logs.unshift({u: currentUser, msg: m, h, type: type || 'all'});
-    if(db.logs.length > 50) db.logs.pop(); // Limita tamanho
-}
+function addLog(m, type) { db.logs.unshift({u: currentUser, msg: m, h: new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit'}), type}); if(db.logs.length > 30) db.logs.pop(); }
 function filterLogs(type) { currentLogFilter = type; render(); }
+function saveUsers() { db.config.user1 = document.getElementById('input-user1').value; db.config.user2 = document.getElementById('input-user2').value; save(); location.reload(); }
 
-function saveUsers() {
-    db.config.user1 = document.getElementById('input-user1').value;
-    db.config.user2 = document.getElementById('input-user2').value;
-    // Migra dados financeiros se mudou nome (opcional, mas bom manter estrutura)
-    save();
-    location.reload(); // Recarrega para aplicar nomes em tudo
-}
-
-// --- RENDER ---
 function render() {
-    const safeSet = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
-    const safeVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
-
-    safeSet('btn-user1', db.config.user1);
-    safeSet('btn-user2', db.config.user2);
-    safeSet('label-user1', db.config.user1);
-    safeSet('label-user2', db.config.user2);
-    safeSet('ponto-user1', db.config.p1 || 0);
-    safeSet('ponto-user2', db.config.p2 || 0);
-    safeVal('input-user1', db.config.user1);
-    safeVal('input-user2', db.config.user2);
-    safeSet('fin-user-name', currentUser);
+    document.getElementById('btn-user1').innerText = db.config.user1;
+    document.getElementById('btn-user2').innerText = db.config.user2;
+    document.getElementById('label-user1').innerText = db.config.user1;
+    document.getElementById('label-user2').innerText = db.config.user2;
+    document.getElementById('ponto-user1').innerText = db.config.p1;
+    document.getElementById('ponto-user2').innerText = db.config.p2;
+    document.getElementById('input-user1').value = db.config.user1;
+    document.getElementById('input-user2').value = db.config.user2;
+    document.getElementById('fin-user-name').innerText = currentUser;
 
     document.getElementById('btn-user1').className = currentUser === db.config.user1 ? 'flex-1 py-2 text-[10px] font-black rounded-xl active-user-btn uppercase' : 'flex-1 py-2 text-[10px] font-bold rounded-xl uppercase text-slate-400';
     document.getElementById('btn-user2').className = currentUser === db.config.user2 ? 'flex-1 py-2 text-[10px] font-black rounded-xl active-user-btn uppercase' : 'flex-1 py-2 text-[10px] font-bold rounded-xl uppercase text-slate-400';
 
     // Tarefas
-    document.getElementById('list-dias').innerHTML = dias.map(d => `<button onclick="currentDay='${d}';render()" class="px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase transition-all ${currentDay===d?'bg-indigo-600 text-white shadow-md':'bg-white text-slate-400 border'}">${d}</button>`).join("");
-    const listaTarefasBruta = (db.tarefas && db.tarefas[currentDay]) ? db.tarefas[currentDay] : [];
-    const tfs = listaTarefasBruta.filter(t => t.u === currentUser);
-    document.getElementById('tarefasList').innerHTML = tfs.length ? tfs.map(t => `<div class="card-clean p-4 flex justify-between items-center"><span class="text-sm font-bold ${t.check?'riscado':''}">${t.txt}</span><div class="flex gap-2"><button onclick="toggleTarefa(${t.id})" class="w-8 h-8 rounded-full ${t.check?'bg-emerald-100 text-emerald-600':'bg-slate-50 text-slate-300'}">✓</button><button onclick="db.tarefas['${currentDay}']=db.tarefas['${currentDay}'].filter(x=>x.id!==${t.id});save()" class="text-slate-200">✕</button></div></div>`).join("") : `<div class="text-center py-6 text-[10px] font-black text-slate-300 uppercase">Nada para fazer hoje</div>`;
+    document.getElementById('list-dias').innerHTML = dias.map(d => `<button onclick="currentDay='${d}';render()" class="px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase ${currentDay===d?'bg-indigo-600 text-white shadow-md':'bg-white text-slate-400 border'}">${d}</button>`).join("");
+    const tfs = (db.tarefas[currentDay] || []).filter(t => t.u === currentUser);
+    document.getElementById('tarefasList').innerHTML = tfs.map(t => `<div class="card-clean p-4 flex justify-between items-center"><span class="text-sm font-bold ${t.check?'riscado':''}">${t.txt}</span><div class="flex gap-2"><button onclick="toggleTarefa(${t.id})" class="w-8 h-8 rounded-full ${t.check?'bg-emerald-100 text-emerald-600':'bg-slate-50 text-slate-300'}">✓</button><button onclick="db.tarefas['${currentDay}']=db.tarefas['${currentDay}'].filter(x=>x.id!==${t.id});save()" class="text-slate-200">✕</button></div></div>`).join("");
 
-    // Financeiro Dashboard
-    const finData = (db.financas && db.financas[currentUser]) ? db.financas[currentUser] : {};
-    safeVal('in-salario', finData.salario || '');
-    safeVal('in-vr', finData.vr || '');
-    safeVal('in-casa', finData.casa || '');
-    safeVal('in-lazer', finData.lazer || '');
-    safeVal('out-academia', finData.academia || '');
-    safeVal('out-celular', finData.celular || '');
-    safeVal('out-internet', finData.internet || '');
-    safeVal('out-alimentacao', finData.alimentacao || '');
-    safeVal('out-outros', finData.outros || '');
+    // Financeiro
+    document.getElementById('fin-meses-nav').innerHTML = meses.map(m => `<button onclick="currentMes='${m}';render()" class="px-4 py-2 rounded-xl text-[9px] font-black uppercase whitespace-nowrap ${currentMes===m?'bg-indigo-600 text-white':'bg-white text-slate-400 border'}">${m}</button>`).join("");
+    const f = (db.financasMensal[currentMes] && db.financasMensal[currentMes][currentUser]) || {};
+    document.getElementById('in-salario').value = f.salario || "";
+    document.getElementById('in-vr').value = f.vr || "";
+    document.getElementById('in-casa-total').value = f.entradaCasa || "";
+    document.getElementById('fixo-academia').value = f.fixo_academia || "";
+    document.getElementById('fixo-celular').value = f.fixo_celular || "";
+    document.getElementById('fixo-internet').value = f.fixo_internet || "";
+    document.getElementById('fixo-alimentacao').value = f.fixo_alimentacao || "";
+    document.getElementById('fin-caixinha-nome').value = f.caixinhaNome || "Caixinha";
+    document.getElementById('fin-caixinha-valor').value = f.caixinhaValor || "";
+    document.getElementById('fin-lazer-in').value = f.lazerEntrada || "";
+    document.getElementById('fin-lazer-out').value = f.lazerSaida || "";
 
-    const totalEntradas = (finData.salario||0) + (finData.vr||0) + (finData.casa||0);
-    const totalSaidas = (finData.academia||0) + (finData.celular||0) + (finData.internet||0) + (finData.alimentacao||0) + (finData.outros||0) + (finData.lazer||0);
-    const saldoFinal = totalEntradas - totalSaidas;
-    safeSet('fin-saldo-final', saldoFinal.toLocaleString('pt-br',{style:'currency',currency:'BRL'}));
+    const saidasVar = f.saidas || [];
+    document.getElementById('fin-lista-saidas').innerHTML = saidasVar.map(s => `<div class="flex justify-between text-xs font-bold border-b pb-1"><span>${s.d}</span><span class="text-rose-500">R$ ${s.v}</span></div>`).join("");
     
-    // Histórico Financeiro
-    document.getElementById('financeiroHistorico').innerHTML = (db.financas.historico || []).slice(0,3).map(h => `<div class="card-clean p-3 flex justify-between items-center text-[10px] text-slate-500 font-bold"><span>${h.date} - ${h.d} (${h.u})</span><span>R$ ${h.v}</span></div>`).join("");
+    const saldoLazer = (f.lazerEntrada||0) - (f.lazerSaida||0);
+    const totalLivre = (f.salario||0) + (f.vr||0) + (f.entradaCasa||0) - (f.fixo_academia||0) - (f.fixo_celular||0) - (f.fixo_internet||0) - (f.fixo_alimentacao||0) - (f.caixinhaValor||0) - (f.lazerEntrada||0) - saidasVar.reduce((a,b)=>a+b.v,0);
+    
+    const elLz = document.getElementById('lazer-orcamento-display');
+    if(elLz) elLz.innerText = saldoLazer.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+    document.getElementById('fin-saldo-final').innerText = totalLivre.toLocaleString('pt-br',{style:'currency',currency:'BRL'});
 
-    // Compras (Com botão Lixeira)
-    document.getElementById('comprasList').innerHTML = (db.compras || []).map(i => `
-        <div class="card-clean p-4 flex items-center justify-between">
-            <span class="${i.check?'riscado':''} font-bold text-sm flex-1">${i.val} <small class="text-slate-400 block text-[9px] uppercase">${i.cat}</small></span>
-            <div class="flex gap-2">
-                <button onclick="const x=db.compras.find(c=>c.id===${i.id});x.check=!x.check;save()" class="w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'}">✓</button>
-                <button onclick="db.compras=db.compras.filter(c=>c.id!==${i.id});save()" class="w-8 h-8 rounded-full bg-rose-50 text-rose-300">🗑</button>
-            </div>
-        </div>`).join("");
+    // Compras (Agrupamento por Categorias)
+    const comps = db.compras || [];
+    const categories = [...new Set(comps.map(i => i.cat))];
+    document.getElementById('comprasList').innerHTML = categories.map(cat => `
+        <div class="space-y-2">
+            <h4 class="text-[9px] font-black uppercase text-indigo-400 tracking-widest ml-2">${cat}</h4>
+            ${comps.filter(i => i.cat === cat).map(i => `
+                <div class="card-clean p-4 flex items-center justify-between">
+                    <span class="${i.check?'riscado':''} font-bold text-sm">${i.val}</span>
+                    <div class="flex gap-2">
+                        <button onclick="db.compras.find(c=>c.id===${i.id}).check=!i.check;save()" class="w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'}">✓</button>
+                        <button onclick="db.compras=db.compras.filter(c=>c.id!==${i.id});save()" class="text-rose-300">🗑</button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `).join("");
 
-    // Lazer
+    // Lazer / Logs / Agenda
     const lzCats = ["Restaurante", "Bar", "Pizzarias", "Cinemas", "Cafés"];
     document.getElementById('lazer-tabs').innerHTML = lzCats.map(c => `<button onclick="currentLazerCat='${c}';render()" class="flex-1 py-3 px-2 text-[9px] font-black rounded-xl ${currentLazerCat===c?'bg-slate-900 text-white':'text-slate-400'} uppercase">${c}</button>`).join("");
-    
-    // Calcula Orçamento Lazer Total (Soma dos usuários configurados no Financeiro)
-    const lazerP1 = (db.financas[db.config.user1]?.lazer || 0);
-    const lazerP2 = (db.financas[db.config.user2]?.lazer || 0);
-    safeSet('lazer-orcamento-display', (lazerP1 + lazerP2).toLocaleString('pt-br',{style:'currency',currency:'BRL'}));
-
-    const lzFil = (db.lazer || []).filter(x => x.cat === currentLazerCat);
-    document.getElementById('lazerList').innerHTML = lzFil.map(l => `<div class="card-clean p-4 flex justify-between items-center"><div><p class="text-sm font-bold">${l.n}</p><p class="text-[10px] text-slate-400 font-bold">Custo: R$ ${l.vlr}</p></div><button onclick="db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()" class="text-slate-200">✕</button></div>`).join("");
-
-    // Agenda
-    const agd = (db.agenda || []).filter(a => a.u === currentUser).sort((a,b)=>new Date(a.data)-new Date(b.data));
-    document.getElementById('agendaList').innerHTML = agd.slice(0,3).map(a => `<div class="card-clean p-4 text-xs font-bold uppercase flex justify-between"><span>${a.data.split('-').reverse().join('/')} - ${a.txt}</span></div>`).join("");
-
-    // Logs (Filtrados)
-    const logsFiltrados = (db.logs || []).filter(l => currentLogFilter === 'all' || l.type === currentLogFilter);
-    document.getElementById('logsDisplay').innerHTML = logsFiltrados.slice(0,10).map(l => `<div class="card-clean p-3 text-[10px] font-bold text-slate-400 uppercase border-l-2 border-indigo-100 pl-3">${l.h} - ${l.u}: ${l.msg}</div>`).join("");
+    document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(x => x.cat === currentLazerCat).map(l => `<div class="card-clean p-4 flex justify-between items-center"><div><p class="text-sm font-bold">${l.n}</p><p class="text-[10px] text-slate-400">R$ ${l.vlr}</p></div><button onclick="db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()" class="text-slate-200">✕</button></div>`).join("");
+    document.getElementById('logsDisplay').innerHTML = (db.logs || []).filter(l => currentLogFilter === 'all' || l.type === currentLogFilter).slice(0,10).map(l => `<div class="card-clean p-3 text-[10px] font-bold text-slate-400 uppercase">${l.h} - ${l.u}: ${l.msg}</div>`).join("");
+    document.getElementById('agendaList').innerHTML = (db.agenda || []).filter(a => a.u === currentUser).sort((a,b)=>new Date(a.data)-new Date(b.data)).slice(0,3).map(a => `<div class="card-clean p-4 text-xs font-bold uppercase flex justify-between"><span>${a.data.split('-').reverse().join('/')} - ${a.txt}</span></div>`).join("");
 }
-
 if(currentGroup) logar(currentGroup);
 </script>
 </body>
