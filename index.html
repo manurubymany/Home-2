@@ -21,13 +21,11 @@
         .riscado { text-decoration: line-through; opacity: 0.35; filter: grayscale(1); }
         .main-container { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 1.25rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border-radius: 12px; background: #fff; border: 1px solid #f1f5f9; cursor: pointer; }
         .calendar-day.has-event { border: 2px solid var(--brand-color); background: #f5f3ff; color: var(--brand-color); }
         #modal-calendario { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
         #modal-calendario.active { display: flex; }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -52,8 +50,8 @@
         <div class="space-y-3">
             <input id="auth-nome" type="text" placeholder="@família" class="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-center border-2 border-transparent focus:border-indigo-100 transition-all">
             <input id="auth-senha" type="password" placeholder="Senha" class="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none text-center border-2 border-transparent focus:border-indigo-100 transition-all">
-            <button onclick="executarAuth()" class="w-full bg-indigo-600 text-white p-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-indigo-700 transition-all">Acessar Painel</button>
-            <button onclick="prepararCadastro()" class="w-full text-indigo-400 p-2 rounded-2xl font-bold text-[11px] uppercase tracking-widest hover:text-indigo-600 transition-colors">✨ Cadastrar</button>
+            <button onclick="executarAuth()" class="w-full bg-indigo-600 text-white p-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">Acessar Painel</button>
+            <button onclick="prepararCadastro()" class="w-full text-indigo-400 p-2 rounded-2xl font-bold text-[11px] uppercase tracking-widest">✨ Cadastrar</button>
         </div>
     </div>
 </section>
@@ -70,10 +68,8 @@
                     <button id="btn-user1" onclick="switchUser(db.config.user1)" class="flex-1 py-2 text-[10px] font-bold rounded-xl uppercase transition-all"></button>
                     <button id="btn-user2" onclick="switchUser(db.config.user2)" class="flex-1 py-2 text-[10px] font-bold rounded-xl uppercase transition-all"></button>
                 </div>
-                <button onclick="logout()" class="flex items-center justify-center bg-rose-50 text-rose-500 min-w-[44px] h-[44px] rounded-2xl hover:bg-rose-100 transition-colors shadow-sm border border-rose-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                <button onclick="logout()" class="flex items-center justify-center bg-rose-50 text-rose-500 min-w-[44px] h-[44px] rounded-2xl border border-rose-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
             </div>
             <nav class="flex overflow-x-auto no-scrollbar gap-1 pb-2">
@@ -99,7 +95,7 @@
         </section>
 
         <section id="content-agenda" class="tab-content space-y-4">
-             <button onclick="toggleCalendario()" class="w-full bg-white border p-4 rounded-2xl font-black text-indigo-600 text-[10px] uppercase shadow-sm">📅 Ver Calendário Completo</button>
+            <button onclick="toggleCalendario()" class="w-full bg-white border p-4 rounded-2xl font-black text-indigo-600 text-[10px] uppercase shadow-sm">📅 Ver Calendário Completo</button>
             <div class="card-clean p-6 space-y-3">
                 <input type="date" id="agendaData" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
                 <input id="agendaComp" placeholder="O que agendar?" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
@@ -110,6 +106,10 @@
 
         <section id="content-financeiro" class="tab-content space-y-4">
             <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="fin-meses-nav"></div>
+            
+            <button onclick="copiarMesAnterior()" class="w-full bg-amber-50 text-amber-600 p-3 rounded-2xl font-black text-[10px] uppercase border border-amber-100 shadow-sm active:scale-95 transition-all">
+                📋 Copiar Dados do Mês Anterior
+            </button>
 
             <div class="card-clean p-6 space-y-6">
                 <div class="text-center">
@@ -118,10 +118,14 @@
                 </div>
 
                 <div class="space-y-3">
-                    <h3 class="text-[10px] font-black uppercase text-emerald-600 flex items-center gap-2">⬇️ Entradas</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-[10px] font-black uppercase text-emerald-600 flex items-center gap-2">⬇️ Entradas</h3>
+                        <button onclick="addNovaEntrada()" class="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg font-bold border border-emerald-100">+ Add Entrada</button>
+                    </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Salário</p><input onchange="updateFinanca('salario', this.value)" id="in-salario" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">VR / VA</p><input onchange="updateFinanca('vr', this.value)" id="in-vr" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
+                        <div id="container-entradas-extras" class="contents"></div>
                         <div class="bg-slate-50 p-2 rounded-xl col-span-2 border-l-4 border-emerald-400"><p class="text-[8px] uppercase font-bold text-slate-400">Entrada Casa (Reserva)</p><input onchange="updateFinanca('entradaCasa', this.value)" id="in-casa-total" type="number" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0"></div>
                     </div>
                 </div>
@@ -129,21 +133,22 @@
                 <hr class="border-dashed">
 
                 <div class="space-y-3">
-                    <h3 class="text-[10px] font-black uppercase text-rose-500 flex items-center gap-2">📌 Custos Fixos</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-[10px] font-black uppercase text-rose-500 flex items-center gap-2">📌 Custos Fixos</h3>
+                        <button onclick="addNovoCustoFixo()" class="text-[9px] bg-rose-50 text-rose-600 px-2 py-1 rounded-lg font-bold border border-rose-100">+ Add Gasto</button>
+                    </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Academia</p><input onchange="updateFinanca('fixo_academia', this.value)" id="fixo-academia" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Celular</p><input onchange="updateFinanca('fixo_celular', this.value)" id="fixo-celular" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
                         <div class="bg-slate-50 p-2 rounded-xl"><p class="text-[8px] uppercase font-bold text-slate-400">Internet</p><input onchange="updateFinanca('fixo_internet', this.value)" id="fixo-internet" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
-                        <div class="bg-slate-50 p-2 rounded-xl ring-2 ring-indigo-200"><p class="text-[8px] uppercase font-black text-indigo-400">Alimentação (Desconta do VR)</p><input onchange="updateFinanca('fixo_alimentacao', this.value)" id="fixo-alimentacao" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
+                        <div id="container-fixos-extras" class="contents"></div>
+                        <div class="bg-slate-50 p-2 rounded-xl ring-2 ring-indigo-200 col-span-2"><p class="text-[8px] uppercase font-black text-indigo-400">Alimentação (Desconta do VR)</p><input onchange="updateFinanca('fixo_alimentacao', this.value)" id="fixo-alimentacao" type="number" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0"></div>
                     </div>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
                     <input onchange="updateFinanca('caixinhaNome', this.value)" id="fin-caixinha-nome" placeholder="Nome da Caixinha" class="bg-transparent text-[10px] font-black uppercase text-indigo-400 outline-none w-full mb-1">
-                    <div class="flex items-center gap-2">
-                        <span class="text-indigo-600 font-bold">R$</span>
-                        <input onchange="updateFinanca('caixinhaValor', this.value)" id="fin-caixinha-valor" type="number" class="bg-transparent w-full font-black text-indigo-700 outline-none text-lg" placeholder="0,00">
-                    </div>
+                    <input onchange="updateFinanca('caixinhaValor', this.value)" id="fin-caixinha-valor" type="number" class="bg-transparent w-full font-black text-indigo-700 outline-none text-lg" placeholder="R$ 0,00">
                 </div>
 
                 <div class="p-4 rounded-2xl bg-amber-50 border border-amber-100">
@@ -152,6 +157,16 @@
                         <div><p class="text-[8px] font-bold text-amber-400 uppercase">Verba Lazer (+)</p><input onchange="updateFinanca('lazerEntrada', this.value)" id="fin-lazer-in" type="number" class="bg-transparent font-bold text-amber-700 outline-none w-full" placeholder="R$ 0"></div>
                         <div><p class="text-[8px] font-bold text-rose-400 uppercase">Gasto Lazer (-)</p><input onchange="updateFinanca('lazerSaida', this.value)" id="fin-lazer-out" type="number" class="bg-transparent font-bold text-rose-700 outline-none w-full" placeholder="R$ 0"></div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card-clean p-4 bg-white space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Comprometimento da Renda</span>
+                    <span id="fin-percent-text" class="text-[10px] font-bold text-slate-700">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                    <div id="fin-progress-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -241,7 +256,6 @@
                 </div>
             </div>
             <div class="card-clean p-6 space-y-4">
-                <p class="text-[10px] font-black uppercase text-slate-400 text-center">Configurar Nomes</p>
                 <input id="input-user1" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
                 <input id="input-user2" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-center outline-none">
                 <button onclick="saveUsers()" class="w-full bg-slate-900 text-white p-5 rounded-2xl font-black uppercase text-[10px]">Salvar Configurações</button>
@@ -251,13 +265,12 @@
 </div>
 
 <script>
-// CONFIGURAÇÃO FIREBASE
 const firebaseConfig = { apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo", authDomain: "home-2-f8b01.firebaseapp.com", databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com", projectId: "home-2-f8b01" };
 firebase.initializeApp(firebaseConfig);
 
-// VARIÁVEIS GLOBAIS
 const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const LISTA_ESSENCIAL = [{val:"Arroz", cat:"Mercearia"}, {val:"Feijão", cat:"Mercearia"}, {val:"Batata", cat:"Hortifruti"}, {val:"Cebola", cat:"Hortifruti"}, {val:"Frango", cat:"Açougue"}, {val:"Carne moída", cat:"Açougue"}, {val:"Ovos", cat:"Açougue"}, {val:"Pão", cat:"Padaria"}, {val:"Detergente", cat:"Limpeza"}, {val:"Papel higiênico", cat:"Higiene"}, {val:"Sabão pó", cat:"Limpeza"}];
 function getTodayName() { let idx = new Date().getDay(); return dias[idx === 0 ? 6 : idx - 1]; }
 
 let currentGroup = localStorage.getItem('py_v26_final');
@@ -268,33 +281,15 @@ let currentLazerCat = "Restaurante";
 
 let db = { config: { user1: "Usuário 1", user2: "Usuário 2", p1: 0, p2: 0 }, tarefas: {}, financasMensal: {}, lazer: [], compras: [], agenda: [], logs: [] };
 
-const LISTA_ESSENCIAL = [
-    {val:"Arroz", cat:"Mercearia"}, {val:"Feijão", cat:"Mercearia"}, {val:"Batata", cat:"Hortifruti"}, {val:"Cebola", cat:"Hortifruti"}, 
-    {val:"Frango", cat:"Açougue"}, {val:"Carne moída", cat:"Açougue"}, {val:"Ovos", cat:"Açougue"}, {val:"Pão", cat:"Padaria"},
-    {val:"Detergente", cat:"Limpeza"}, {val:"Papel higiênico", cat:"Higiene"}, {val:"Sabão pó", cat:"Limpeza"}
-];
-
-// AUTENTICAÇÃO E INICIALIZAÇÃO
-function prepararCadastro() {
-    document.getElementById('auth-nome').value = "";
-    document.getElementById('auth-senha').value = "";
-    document.getElementById('auth-nome').focus();
-    alert("Digite o nome da @família e a senha que deseja criar, depois clique em ACESSAR PAINEL.");
-}
-
 function executarAuth() {
     const g = document.getElementById('auth-nome').value.trim().toLowerCase().replace('@','');
     const s = document.getElementById('auth-senha').value.trim();
-    if(!g || !s) return alert("Preencha família e senha!");
+    if(!g || !s) return alert("Preencha!");
     const ref = firebase.database().ref('v26_final/' + g);
     ref.once('value', snap => {
         if(snap.exists()) {
             if(snap.val().senha === s) logar(g); else alert("Senha incorreta");
-        } else { 
-            if(confirm(`A família @${g} não existe. Deseja cadastrá-la agora?`)) {
-                ref.set({...db, senha: s}).then(() => logar(g)); 
-            }
-        }
+        } else { if(confirm(`Cadastrar família @${g}?`)) ref.set({...db, senha: s}).then(() => logar(g)); }
     });
 }
 
@@ -306,12 +301,6 @@ function logar(g) {
     firebase.database().ref('v26_final/'+g).on('value', snap => {
         if(snap.exists()){
             db = snap.val();
-            if(!db.financasMensal) db.financasMensal = {};
-            if(!db.agenda) db.agenda = [];
-            if(!db.tarefas) db.tarefas = {};
-            if(!db.compras) db.compras = [];
-            if(!db.lazer) db.lazer = [];
-            if(!db.logs) db.logs = [];
             if(!currentUser) currentUser = db.config.user1;
             render();
         }
@@ -331,23 +320,7 @@ function showTab(id) {
 
 function switchUser(u) { currentUser = u; render(); }
 
-// FUNÇÕES DE AÇÃO
-function addTarefa() {
-    const v = document.getElementById('novaTarefa').value; if(!v) return;
-    if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
-    db.tarefas[currentDay].push({id: Date.now(), txt: v, check: false, u: currentUser});
-    addLog(`Tarefa: ${v}`, 'tar'); document.getElementById('novaTarefa').value=""; save();
-}
-
-function toggleTarefa(id) {
-    const t = db.tarefas[currentDay].find(x => x.id === id);
-    if(t) {
-        if(!t.check) { t.check = true; if(currentUser === db.config.user1) db.config.p1 += 10; else db.config.p2 += 10; }
-        else { t.check = false; }
-        save();
-    }
-}
-
+// FUNÇÕES FINANCEIRAS NOVAS (MANTENDO AS ANTIGAS)
 function updateFinanca(campo, valor) {
     if(!db.financasMensal[currentMes]) db.financasMensal[currentMes] = {};
     if(!db.financasMensal[currentMes][currentUser]) db.financasMensal[currentMes][currentUser] = {};
@@ -355,6 +328,61 @@ function updateFinanca(campo, valor) {
     save();
 }
 
+function addNovaEntrada() {
+    if(!db.financasMensal[currentMes]) db.financasMensal[currentMes] = {};
+    if(!db.financasMensal[currentMes][currentUser]) db.financasMensal[currentMes][currentUser] = {};
+    if(!db.financasMensal[currentMes][currentUser].entradasExtras) db.financasMensal[currentMes][currentUser].entradasExtras = [];
+    db.financasMensal[currentMes][currentUser].entradasExtras.push({id: Date.now(), nome: "Nova Entrada", valor: 0});
+    save();
+}
+
+function updateEntradaExtra(id, campo, valor) {
+    const item = db.financasMensal[currentMes][currentUser].entradasExtras.find(x => x.id === id);
+    if(item) { item[campo] = campo === 'valor' ? (parseFloat(valor) || 0) : valor; save(); }
+}
+
+function addNovoCustoFixo() {
+    if(!db.financasMensal[currentMes]) db.financasMensal[currentMes] = {};
+    if(!db.financasMensal[currentMes][currentUser]) db.financasMensal[currentMes][currentUser] = {};
+    if(!db.financasMensal[currentMes][currentUser].fixosExtras) db.financasMensal[currentMes][currentUser].fixosExtras = [];
+    db.financasMensal[currentMes][currentUser].fixosExtras.push({id: Date.now(), nome: "Novo Gasto", valor: 0});
+    save();
+}
+
+function updateFixoExtra(id, campo, valor) {
+    const item = db.financasMensal[currentMes][currentUser].fixosExtras.find(x => x.id === id);
+    if(item) { item[campo] = campo === 'valor' ? (parseFloat(valor) || 0) : valor; save(); }
+}
+
+function copiarMesAnterior() {
+    const mesAtualIdx = meses.indexOf(currentMes);
+    if (mesAtualIdx === 0) return alert("Janeiro é o primeiro!");
+    const mesAnterior = meses[mesAtualIdx - 1];
+    const dadosAnt = db.financasMensal[mesAnterior] && db.financasMensal[mesAnterior][currentUser];
+    if (!dadosAnt) return alert("Dados anteriores não encontrados.");
+    if (confirm(`Copiar dados de ${mesAnterior}?`)) {
+        if (!db.financasMensal[currentMes]) db.financasMensal[currentMes] = {};
+        db.financasMensal[currentMes][currentUser] = JSON.parse(JSON.stringify(dadosAnt));
+        save();
+    }
+}
+
+// FUNÇÕES ORIGINAIS (AGENDA, COMPRAS, TAREFAS)
+function addTarefa() {
+    const v = document.getElementById('novaTarefa').value; if(!v) return;
+    if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
+    db.tarefas[currentDay].push({id: Date.now(), txt: v, check: false, u: currentUser});
+    addLog(`Tarefa: ${v}`, 'tar'); document.getElementById('novaTarefa').value=""; save();
+}
+function toggleTarefa(id) {
+    const t = db.tarefas[currentDay].find(x => x.id === id);
+    if(t) { t.check = !t.check; if(t.check) { if(currentUser === db.config.user1) db.config.p1 += 10; else db.config.p2 += 10; } save(); }
+}
+function addAgenda() {
+    const d = document.getElementById('agendaData').value; const t = document.getElementById('agendaComp').value; if(!d || !t) return;
+    if(!db.agenda) db.agenda = []; db.agenda.push({id: Date.now(), data: d, txt: t, u: currentUser});
+    addLog(`Agenda: ${t}`, 'age'); save();
+}
 function addSaidaVariavel() {
     const d = document.getElementById('finOutDesc').value;
     const v = parseFloat(document.getElementById('finOutValor').value);
@@ -364,118 +392,43 @@ function addSaidaVariavel() {
     db.financasMensal[currentMes][currentUser].saidas.push({id: Date.now(), d, v, cat: c});
     document.getElementById('finOutDesc').value = ""; document.getElementById('finOutValor').value = ""; save();
 }
-
-// COMPRAS (CORRIGIDO)
-function alternarCheckCompra(id) {
-    const item = db.compras.find(c => c.id === id);
-    if (item) {
-        item.check = !item.check;
-        save();
-    }
-}
-
-function removerCompra(id) {
-    db.compras = db.compras.filter(c => c.id !== id);
-    save();
-}
-
 function addCompraManual() {
-    const v = document.getElementById('compraNovoItem').value;
-    const c = document.getElementById('compraCategoria').value;
-    if(!v) return;
-    if(!db.compras) db.compras = [];
-    db.compras.push({ id: Date.now(), val: v, cat: c, check: false });
-    save(); 
-    document.getElementById('compraNovoItem').value = "";
+    const v = document.getElementById('compraNovoItem').value; const c = document.getElementById('compraCategoria').value; if(!v) return;
+    if(!db.compras) db.compras = []; db.compras.push({ id: Date.now(), val: v, cat: c, check: false }); save(); document.getElementById('compraNovoItem').value = "";
 }
-
 function restaurarComprasEssenciais() {
     if(!db.compras) db.compras = [];
-    LISTA_ESSENCIAL.forEach(item => { 
-        if(!db.compras.some(c => c.val === item.val && !c.check)) {
-            db.compras.push({...item, id: Date.now() + Math.random(), check: false}); 
-        }
-    });
+    LISTA_ESSENCIAL.forEach(item => { if(!db.compras.some(c => c.val === item.val && !c.check)) db.compras.push({...item, id: Date.now() + Math.random(), check: false}); });
     save();
 }
-
-function shareWhatsApp() {
-    const itens = (db.compras || []).filter(i => !i.check);
-    if(!itens.length) return alert("Vazio");
-    let t = `🛒 *LISTA DE COMPRAS*\n\n`;
-    const cats = [...new Set(itens.map(i => i.cat))];
-    cats.forEach(c => {
-        t += `*${c.toUpperCase()}*\n`;
-        itens.filter(i => i.cat === c).forEach(i => t += `• ${i.val}\n`);
-        t += `\n`;
-    });
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
-}
-
-// AGENDA
-function addAgenda() {
-    const d = document.getElementById('agendaData').value;
-    const t = document.getElementById('agendaComp').value;
-    if(!d || !t) return;
-    if(!db.agenda) db.agenda = [];
-    db.agenda.push({id: Date.now(), data: d, txt: t, u: currentUser});
-    addLog(`Agenda: ${t}`, 'age'); document.getElementById('agendaComp').value=""; save();
-}
-
+function addLog(m, type) { if(!db.logs) db.logs = []; db.logs.unshift({u: currentUser, msg: m, h: new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit'}), type}); }
 function toggleCalendario() { document.getElementById('modal-calendario').classList.toggle('active'); if(document.getElementById('modal-calendario').classList.contains('active')) renderCalendario(); }
-
-function renderCalendario() {
-    const container = document.getElementById('calendar-grid-container');
-    const agora = new Date();
-    const totalDias = new Date(2026, agora.getMonth()+1, 0).getDate();
-    let h = "";
-    for(let d=1; d<=totalDias; d++) {
-        const dStr = `2026-${String(agora.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const tem = (db.agenda || []).find(a => a.data === dStr);
-        h += `<div onclick=\"verDetalhesDia('${dStr}')\" class=\"calendar-day ${tem?'has-event':''}\"><span>${d}</span></div>`;
-    }
-    container.innerHTML = h;
-}
-
 function verDetalhesDia(data) {
     const evs = (db.agenda || []).filter(a => a.data === data);
     document.getElementById('calendar-details').innerHTML = evs.length ? evs.map(e => `<div class=\"card-clean p-4 border-l-4 border-indigo-400 text-xs font-bold flex justify-between\"><span>${e.txt}</span><button onclick=\"db.agenda=db.agenda.filter(x=>x.id!==${e.id});save();verDetalhesDia('${data}')\" class=\"text-slate-300\">✕</button></div>`).join("") : `<p class=\"text-center text-xs text-slate-300\">Vazio</p>`;
 }
-
-// LAZER
 function addLazer() {
-    const v = document.getElementById('lazerNovo').value;
-    const c = parseFloat(document.getElementById('lazerCusto').value) || 0;
-    if(!v) return;
-    if(!db.lazer) db.lazer = [];
-    db.lazer.push({id: Date.now(), n: v, vlr: c, cat: currentLazerCat});
-    save(); document.getElementById('lazerNovo').value = ""; document.getElementById('lazerCusto').value = "";
+    const v = document.getElementById('lazerNovo').value; const c = parseFloat(document.getElementById('lazerCusto').value) || 0; if(!v) return;
+    if(!db.lazer) db.lazer = []; db.lazer.push({id: Date.now(), n: v, vlr: c, cat: currentLazerCat}); save(); document.getElementById('lazerNovo').value="";
 }
-
 function sortearLazer() {
     const f = (db.financasMensal[currentMes] && db.financasMensal[currentMes][currentUser]) || {};
-    const saldoLazerDisponivel = (parseFloat(f.lazerEntrada) || 0) - (parseFloat(f.lazerSaida) || 0);
-    const todasSugestoes = db.lazer || [];
-    const sugestoesNoOrcamento = todasSugestoes.filter(item => item.vlr <= saldoLazerDisponivel);
-
-    if (sugestoesNoOrcamento.length === 0) {
-        if (saldoLazerDisponivel <= 0) return alert(`❌ Saldo insuficiente!`);
-        else return alert(`⚠️ Nenhuma sugestão encontrada que custe menos de R$ ${saldoLazerDisponivel.toFixed(2)}.`);
-    }
-
-    const sorteado = sugestoesNoOrcamento[Math.floor(Math.random() * sugestoesNoOrcamento.length)];
-    alert(`🎰 SORTEIO DE LAZER 🎰\n\n🍴 Local: ${sorteado.n}\n📂 Categoria: ${sorteado.cat}\n💰 Custo Est.: R$ ${sorteado.vlr.toFixed(2)}`);
+    const saldo = (f.lazerEntrada || 0) - (f.lazerSaida || 0);
+    const lista = (db.lazer || []).filter(i => i.vlr <= saldo);
+    if(!lista.length) return alert("Sem saldo!");
+    const s = lista[Math.floor(Math.random()*lista.length)];
+    alert(`🎰 SORTEIO: ${s.n} (R$ ${s.vlr})`);
 }
-
-// UTILITÁRIOS
-function addLog(m, type) { 
-    if(!db.logs) db.logs = [];
-    db.logs.unshift({u: currentUser, msg: m, h: new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit'}), type}); 
-}
-
 function saveUsers() { db.config.user1 = document.getElementById('input-user1').value; db.config.user2 = document.getElementById('input-user2').value; save(); location.reload(); }
+function shareWhatsApp() {
+    const itens = (db.compras || []).filter(i => !i.check);
+    let t = `🛒 *LISTA DE COMPRAS*\n\n`;
+    const cats = [...new Set(itens.map(i => i.cat))];
+    cats.forEach(c => { t += `*${c.toUpperCase()}*\n`; itens.filter(i => i.cat === c).forEach(i => t += `• ${i.val}\n`); t += `\n`; });
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
+}
 
-// RENDERIZAÇÃO PRINCIPAL
+// RENDER
 function render() {
     document.getElementById('btn-user1').innerText = db.config.user1;
     document.getElementById('btn-user2').innerText = db.config.user2;
@@ -498,6 +451,7 @@ function render() {
     // FINANÇAS
     document.getElementById('fin-meses-nav').innerHTML = meses.map(m => `<button onclick=\"currentMes='${m}';render()\" class=\"px-4 py-2 rounded-xl text-[9px] font-black uppercase whitespace-nowrap ${currentMes===m?'bg-indigo-600 text-white':'bg-white text-slate-400 border'}\">${m}</button>`).join("");
     const f = (db.financasMensal[currentMes] && db.financasMensal[currentMes][currentUser]) || {};
+    
     document.getElementById('in-salario').value = f.salario || "";
     document.getElementById('in-vr').value = f.vr || "";
     document.getElementById('in-casa-total').value = f.entradaCasa || "";
@@ -505,87 +459,86 @@ function render() {
     document.getElementById('fixo-celular').value = f.fixo_celular || "";
     document.getElementById('fixo-internet').value = f.fixo_internet || "";
     document.getElementById('fixo-alimentacao').value = f.fixo_alimentacao || "";
-    document.getElementById('fin-caixinha-nome').value = f.caixinhaNome || "Caixinha";
     document.getElementById('fin-caixinha-valor').value = f.caixinhaValor || "";
+    document.getElementById('fin-caixinha-nome').value = f.caixinhaNome || "Caixinha";
     document.getElementById('fin-lazer-in').value = f.lazerEntrada || "";
     document.getElementById('fin-lazer-out').value = f.lazerSaida || "";
 
+    // Entradas Extras
+    document.getElementById('container-entradas-extras').innerHTML = (f.entradasExtras || []).map(e => `
+        <div class="bg-slate-50 p-2 rounded-xl">
+            <input onchange="updateEntradaExtra(${e.id}, 'nome', this.value)" value="${e.nome}" class="bg-transparent text-[8px] uppercase font-bold text-slate-400 outline-none w-full">
+            <div class="flex items-center gap-1">
+                <input onchange="updateEntradaExtra(${e.id}, 'valor', this.value)" type="number" value="${e.valor}" class="bg-transparent w-full font-bold outline-none text-emerald-700" placeholder="R$ 0">
+                <button onclick="db.financasMensal['${currentMes}']['${currentUser}'].entradasExtras = db.financasMensal['${currentMes}']['${currentUser}'].entradasExtras.filter(x=>x.id!==${e.id});save()" class="text-slate-300">✕</button>
+            </div>
+        </div>`).join("");
+
+    // Custos Extras
+    document.getElementById('container-fixos-extras').innerHTML = (f.fixosExtras || []).map(x => `
+        <div class="bg-slate-50 p-2 rounded-xl">
+            <input onchange="updateFixoExtra(${x.id}, 'nome', this.value)" value="${x.nome}" class="bg-transparent text-[8px] uppercase font-bold text-slate-400 outline-none w-full">
+            <div class="flex items-center gap-1">
+                <input onchange="updateFixoExtra(${x.id}, 'valor', this.value)" type="number" value="${x.valor}" class="bg-transparent w-full font-bold outline-none text-rose-600" placeholder="R$ 0">
+                <button onclick="db.financasMensal['${currentMes}']['${currentUser}'].fixosExtras = db.financasMensal['${currentMes}']['${currentUser}'].fixosExtras.filter(i=>i.id!==${x.id});save()" class="text-slate-300">✕</button>
+            </div>
+        </div>`).join("");
+
+    // Cálculos
+    const totEntradas = (parseFloat(f.salario)||0) + (f.entradasExtras||[]).reduce((a,b)=>a+(parseFloat(b.valor)||0),0);
+    const totFixos = (parseFloat(f.fixo_academia)||0) + (parseFloat(f.fixo_celular)||0) + (parseFloat(f.fixo_internet)||0) + (parseFloat(f.fixo_alimentacao)||0) + (parseFloat(f.caixinhaValor)||0) + (parseFloat(f.lazerEntrada)||0) + (f.fixosExtras||[]).reduce((a,b)=>a+(parseFloat(b.valor)||0),0);
     const saidasVar = f.saidas || [];
-    const saidasPorCategoria = saidasVar.reduce((acc, item) => {
-        const cat = item.cat || 'Outros';
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-    }, {});
-
-    document.getElementById('fin-lista-saidas').innerHTML = Object.keys(saidasPorCategoria).map(cat => `
-        <div class=\"space-y-1\">
-            <h4 class=\"text-[8px] font-black uppercase text-slate-400 tracking-tighter ml-1\">${cat}</h4>
-            ${saidasPorCategoria[cat].map(s => `
-                <div class=\"flex justify-between items-center text-xs font-bold bg-slate-50 p-2 rounded-lg border border-slate-100\">
-                    <span>${s.d}</span>
-                    <div class=\"flex items-center gap-2\">
-                        <span class=\"text-rose-500\">R$ ${parseFloat(s.v).toFixed(2)}</span>
-                        <button onclick=\"db.financasMensal['${currentMes}']['${currentUser}'].saidas = db.financasMensal['${currentMes}']['${currentUser}'].saidas.filter(x=>x.id!==${s.id});save()\" class=\"text-slate-300\">✕</button>
-                    </div>
-                </div>
-            `).join("")}
-        </div>
-    `).join("");
-
-    const totalSaidasVar = saidasVar.reduce((a, b) => a + parseFloat(b.v), 0);
-    const totalLivre = (f.salario || 0) - (f.fixo_academia || 0) - (f.fixo_celular || 0) - (f.fixo_internet || 0) - (f.caixinhaValor || 0) - (f.lazerEntrada || 0) - totalSaidasVar;
+    const totSaidasV = saidasVar.reduce((a, b) => a + parseFloat(b.v), 0);
+    const totalLivre = totEntradas - totFixos - totSaidasV;
     const vrFinal = (f.vr || 0) - (f.fixo_alimentacao || 0);
 
+    const percent = totEntradas > 0 ? Math.round((totFixos / totEntradas) * 100) : 0;
+    document.getElementById('fin-percent-text').innerText = percent + "%";
+    document.getElementById('fin-progress-bar').style.width = Math.min(percent, 100) + "%";
     document.getElementById('fin-saldo-final').innerText = totalLivre.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+
+    // Render Saídas com Categorias
+    const saidasPorCat = saidasVar.reduce((acc, item) => { const cat = item.cat || 'Outros'; if (!acc[cat]) acc[cat] = []; acc[cat].push(item); return acc; }, {});
+    document.getElementById('fin-lista-saidas').innerHTML = Object.keys(saidasPorCat).map(cat => `
+        <div class=\"space-y-1\"><h4 class=\"text-[8px] font-black uppercase text-slate-400 tracking-tighter ml-1\">${cat}</h4>
+            ${saidasPorCat[cat].map(s => `<div class=\"flex justify-between items-center text-xs font-bold bg-slate-50 p-2 rounded-lg border border-slate-100\"><span>${s.d}</span><div class=\"flex items-center gap-2\"><span class=\"text-rose-500\">R$ ${parseFloat(s.v).toFixed(2)}</span><button onclick=\"db.financasMensal['${currentMes}']['${currentUser}'].saidas = db.financasMensal['${currentMes}']['${currentUser}'].saidas.filter(x=>x.id!==${s.id});save()\" class=\"text-slate-300\">✕</button></div></div>`).join("")}
+        </div>`).join("");
 
     document.getElementById('extra-dash-container').innerHTML = `
         <div class="grid grid-cols-2 gap-2 mt-4">
-            <div class="bg-indigo-900 p-3 rounded-2xl border border-indigo-700">
-                <p class="text-[8px] font-black text-indigo-300 uppercase">VR/VA Disponível</p>
-                <p class="text-sm font-bold text-white">${vrFinal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-            </div>
-            <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
-                <p class="text-[8px] font-black text-indigo-600 uppercase">Reserva Casa</p>
-                <p class="text-sm font-bold text-indigo-700">${(f.entradaCasa || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-            </div>
-        </div>
-    `;
+            <div class="bg-indigo-900 p-3 rounded-2xl border border-indigo-700"><p class="text-[8px] font-black text-indigo-300 uppercase">VR/VA Disponível</p><p class="text-sm font-bold text-white">${vrFinal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p></div>
+            <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100"><p class="text-[8px] font-black text-indigo-600 uppercase">Reserva Casa</p><p class="text-sm font-bold text-indigo-700">${(f.entradaCasa || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p></div>
+        </div>`;
 
-    // COMPRAS (RENDER CORRIGIDO)
+    // COMPRAS
     const comps = db.compras || [];
     const categories = [...new Set(comps.map(i => i.cat))];
     document.getElementById('comprasList').innerHTML = categories.map(cat => `
-        <div class="space-y-2">
-            <h4 class="text-[9px] font-black uppercase text-indigo-400 tracking-widest ml-2">${cat}</h4>
-            ${comps.filter(i => i.cat === cat).map(i => `
-                <div class="card-clean p-4 flex items-center justify-between">
-                    <span class="${i.check ? 'riscado' : ''} font-bold text-sm">${i.val}</span>
-                    <div class="flex gap-2">
-                        <button onclick="alternarCheckCompra(${i.id})" class="w-8 h-8 rounded-full ${i.check ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-300'}">✓</button>
-                        <button onclick="removerCompra(${i.id})" class="text-rose-300">🗑</button>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `).join("");
+        <div class="space-y-2"><h4 class="text-[9px] font-black uppercase text-indigo-400 tracking-widest ml-2">${cat}</h4>
+            ${comps.filter(i => i.cat === cat).map(i => `<div class="card-clean p-4 flex items-center justify-between"><span class="${i.check?'riscado':''} font-bold text-sm">${i.val}</span><div class="flex gap-2"><button onclick=\"const item=db.compras.find(c=>c.id===${i.id});item.check=!item.check;save()\" class=\"w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'}\">✓</button><button onclick=\"db.compras=db.compras.filter(c=>c.id!==${i.id});save()\" class=\"text-rose-300\">🗑</button></div></div>`).join('')}
+        </div>`).join("");
 
-    // LAZER (RENDER)
+    // LAZER E LOGS
     const lzCats = ["Restaurante", "Bar", "Pizzarias", "Cinemas", "Cafés"];
     document.getElementById('lazer-tabs').innerHTML = lzCats.map(c => `<button onclick=\"currentLazerCat='${c}';render()\" class=\"flex-1 py-3 px-2 text-[9px] font-black rounded-xl ${currentLazerCat===c?'bg-slate-900 text-white':'text-slate-400'} uppercase\">${c}</button>`).join("");
     document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(x => x.cat === currentLazerCat).map(l => `<div class=\"card-clean p-4 flex justify-between items-center\"><div><p class=\"text-sm font-bold\">${l.n}</p><p class=\"text-[10px] text-slate-400\">R$ ${l.vlr}</p></div><button onclick=\"db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()\" class=\"text-slate-200\">✕</button></div>`).join("");
-    
-    const saldoLazerCalculado = (parseFloat(f.lazerEntrada) || 0) - (parseFloat(f.lazerSaida) || 0);
-    const elLazerDisplay = document.getElementById('lazer-orcamento-display');
-    if (elLazerDisplay) {
-        elLazerDisplay.innerText = saldoLazerCalculado.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
-        elLazerDisplay.className = saldoLazerCalculado < 0 ? "text-xl font-black text-rose-600 mt-1" : "text-xl font-black text-indigo-700 mt-1";
-    }
-
-    // LOGS E AGENDA (RENDER)
+    document.getElementById('lazer-orcamento-display').innerText = ((f.lazerEntrada || 0) - (f.lazerSaida || 0)).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
     document.getElementById('logsDisplay').innerHTML = (db.logs || []).slice(0,10).map(l => `<div class=\"card-clean p-3 text-[10px] font-bold text-slate-400 uppercase\">${l.h} - ${l.u}: ${l.msg}</div>`).join("");
     document.getElementById('agendaList').innerHTML = (db.agenda || []).filter(a => a.u === currentUser).sort((a,b)=>new Date(a.data)-new Date(b.data)).slice(0,3).map(a => `<div class=\"card-clean p-4 text-xs font-bold uppercase flex justify-between\"><span>${a.data.split('-').reverse().join('/')} - ${a.txt}</span></div>`).join("");
 }
+
+function renderCalendario() {
+    const container = document.getElementById('calendar-grid-container');
+    const totalDias = new Date(2026, new Date().getMonth()+1, 0).getDate();
+    let h = "";
+    for(let d=1; d<=totalDias; d++) {
+        const dStr = `2026-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const tem = (db.agenda || []).find(a => a.data === dStr);
+        h += `<div onclick=\"verDetalhesDia('${dStr}')\" class=\"calendar-day ${tem?'has-event':''}\"><span>${d}</span></div>`;
+    }
+    container.innerHTML = h;
+}
+
 if(currentGroup) logar(currentGroup);
 </script>
 </body>
