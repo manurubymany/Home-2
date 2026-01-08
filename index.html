@@ -251,9 +251,11 @@
 </div>
 
 <script>
+// CONFIGURAÇÃO FIREBASE
 const firebaseConfig = { apiKey: "AIzaSyALUTZ-W5KWoSXw5DoJ3AbeMNzFsvTurNo", authDomain: "home-2-f8b01.firebaseapp.com", databaseURL: "https://home-2-f8b01-default-rtdb.firebaseio.com", projectId: "home-2-f8b01" };
 firebase.initializeApp(firebaseConfig);
 
+// VARIÁVEIS GLOBAIS
 const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 function getTodayName() { let idx = new Date().getDay(); return dias[idx === 0 ? 6 : idx - 1]; }
@@ -272,6 +274,7 @@ const LISTA_ESSENCIAL = [
     {val:"Detergente", cat:"Limpeza"}, {val:"Papel higiênico", cat:"Higiene"}, {val:"Sabão pó", cat:"Limpeza"}
 ];
 
+// AUTENTICAÇÃO E INICIALIZAÇÃO
 function prepararCadastro() {
     document.getElementById('auth-nome').value = "";
     document.getElementById('auth-senha').value = "";
@@ -328,6 +331,7 @@ function showTab(id) {
 
 function switchUser(u) { currentUser = u; render(); }
 
+// FUNÇÕES DE AÇÃO
 function addTarefa() {
     const v = document.getElementById('novaTarefa').value; if(!v) return;
     if(!db.tarefas[currentDay]) db.tarefas[currentDay] = [];
@@ -361,6 +365,54 @@ function addSaidaVariavel() {
     document.getElementById('finOutDesc').value = ""; document.getElementById('finOutValor').value = ""; save();
 }
 
+// COMPRAS (CORRIGIDO)
+function alternarCheckCompra(id) {
+    const item = db.compras.find(c => c.id === id);
+    if (item) {
+        item.check = !item.check;
+        save();
+    }
+}
+
+function removerCompra(id) {
+    db.compras = db.compras.filter(c => c.id !== id);
+    save();
+}
+
+function addCompraManual() {
+    const v = document.getElementById('compraNovoItem').value;
+    const c = document.getElementById('compraCategoria').value;
+    if(!v) return;
+    if(!db.compras) db.compras = [];
+    db.compras.push({ id: Date.now(), val: v, cat: c, check: false });
+    save(); 
+    document.getElementById('compraNovoItem').value = "";
+}
+
+function restaurarComprasEssenciais() {
+    if(!db.compras) db.compras = [];
+    LISTA_ESSENCIAL.forEach(item => { 
+        if(!db.compras.some(c => c.val === item.val && !c.check)) {
+            db.compras.push({...item, id: Date.now() + Math.random(), check: false}); 
+        }
+    });
+    save();
+}
+
+function shareWhatsApp() {
+    const itens = (db.compras || []).filter(i => !i.check);
+    if(!itens.length) return alert("Vazio");
+    let t = `🛒 *LISTA DE COMPRAS*\n\n`;
+    const cats = [...new Set(itens.map(i => i.cat))];
+    cats.forEach(c => {
+        t += `*${c.toUpperCase()}*\n`;
+        itens.filter(i => i.cat === c).forEach(i => t += `• ${i.val}\n`);
+        t += `\n`;
+    });
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
+}
+
+// AGENDA
 function addAgenda() {
     const d = document.getElementById('agendaData').value;
     const t = document.getElementById('agendaComp').value;
@@ -390,34 +442,7 @@ function verDetalhesDia(data) {
     document.getElementById('calendar-details').innerHTML = evs.length ? evs.map(e => `<div class=\"card-clean p-4 border-l-4 border-indigo-400 text-xs font-bold flex justify-between\"><span>${e.txt}</span><button onclick=\"db.agenda=db.agenda.filter(x=>x.id!==${e.id});save();verDetalhesDia('${data}')\" class=\"text-slate-300\">✕</button></div>`).join("") : `<p class=\"text-center text-xs text-slate-300\">Vazio</p>`;
 }
 
-function addCompraManual() {
-    const v = document.getElementById('compraNovoItem').value;
-    const c = document.getElementById('compraCategoria').value;
-    if(!v) return;
-    if(!db.compras) db.compras = [];
-    db.compras.push({ id: Date.now(), val: v, cat: c, check: false });
-    save(); document.getElementById('compraNovoItem').value = "";
-}
-
-function shareWhatsApp() {
-    const itens = (db.compras || []).filter(i => !i.check);
-    if(!itens.length) return alert("Vazio");
-    let t = `🛒 *LISTA DE COMPRAS*\n\n`;
-    const cats = [...new Set(itens.map(i => i.cat))];
-    cats.forEach(c => {
-        t += `*${c.toUpperCase()}*\n`;
-        itens.filter(i => i.cat === c).forEach(i => t += `• ${i.val}\n`);
-        t += `\n`;
-    });
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`);
-}
-
-function restaurarComprasEssenciais() {
-    if(!db.compras) db.compras = [];
-    LISTA_ESSENCIAL.forEach(item => { if(!db.compras.some(c => c.val === item.val && !c.check)) db.compras.push({...item, id: Date.now()+Math.random()}); });
-    save();
-}
-
+// LAZER
 function addLazer() {
     const v = document.getElementById('lazerNovo').value;
     const c = parseFloat(document.getElementById('lazerCusto').value) || 0;
@@ -428,29 +453,21 @@ function addLazer() {
 }
 
 function sortearLazer() {
-    // Busca o saldo de lazer atual do usuário logado
     const f = (db.financasMensal[currentMes] && db.financasMensal[currentMes][currentUser]) || {};
     const saldoLazerDisponivel = (parseFloat(f.lazerEntrada) || 0) - (parseFloat(f.lazerSaida) || 0);
-
-    // FILTRO GLOBAL: Busca em TODAS as categorias de lazer cadastradas
     const todasSugestoes = db.lazer || [];
     const sugestoesNoOrcamento = todasSugestoes.filter(item => item.vlr <= saldoLazerDisponivel);
 
     if (sugestoesNoOrcamento.length === 0) {
-        if (saldoLazerDisponivel <= 0) {
-            return alert(`❌ Saldo insuficiente!\nSeu caixa de lazer está zerado ou negativo.`);
-        } else {
-            return alert(`⚠️ Nenhuma sugestão encontrada que custe menos de R$ ${saldoLazerDisponivel.toFixed(2)}.`);
-        }
+        if (saldoLazerDisponivel <= 0) return alert(`❌ Saldo insuficiente!`);
+        else return alert(`⚠️ Nenhuma sugestão encontrada que custe menos de R$ ${saldoLazerDisponivel.toFixed(2)}.`);
     }
 
-    // Sorteio aleatório entre as que cabem no bolso
     const sorteado = sugestoesNoOrcamento[Math.floor(Math.random() * sugestoesNoOrcamento.length)];
-    
-    // Feedback visual
-    alert(`🎰 SORTEIO DE LAZER 🎰\n\n🍴 Local: ${sorteado.n}\n📂 Categoria: ${sorteado.cat}\n💰 Custo Est.: R$ ${sorteado.vlr.toFixed(2)}\n\n(Baseado no seu saldo de R$ ${saldoLazerDisponivel.toFixed(2)})`);
+    alert(`🎰 SORTEIO DE LAZER 🎰\n\n🍴 Local: ${sorteado.n}\n📂 Categoria: ${sorteado.cat}\n💰 Custo Est.: R$ ${sorteado.vlr.toFixed(2)}`);
 }
 
+// UTILITÁRIOS
 function addLog(m, type) { 
     if(!db.logs) db.logs = [];
     db.logs.unshift({u: currentUser, msg: m, h: new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit'}), type}); 
@@ -458,6 +475,7 @@ function addLog(m, type) {
 
 function saveUsers() { db.config.user1 = document.getElementById('input-user1').value; db.config.user2 = document.getElementById('input-user2').value; save(); location.reload(); }
 
+// RENDERIZAÇÃO PRINCIPAL
 function render() {
     document.getElementById('btn-user1').innerText = db.config.user1;
     document.getElementById('btn-user2').innerText = db.config.user2;
@@ -472,10 +490,12 @@ function render() {
     document.getElementById('btn-user1').className = currentUser === db.config.user1 ? 'flex-1 py-2 text-[10px] font-black rounded-xl active-user-btn uppercase' : 'flex-1 py-2 text-[10px] font-bold rounded-xl uppercase text-slate-400';
     document.getElementById('btn-user2').className = currentUser === db.config.user2 ? 'flex-1 py-2 text-[10px] font-black rounded-xl active-user-btn uppercase' : 'flex-1 py-2 text-[10px] font-bold rounded-xl uppercase text-slate-400';
 
+    // TAREFAS
     document.getElementById('list-dias').innerHTML = dias.map(d => `<button onclick=\"currentDay='${d}';render()\" class=\"px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase ${currentDay===d?'bg-indigo-600 text-white shadow-md':'bg-white text-slate-400 border'}\">${d}</button>`).join("");
     const tfs = (db.tarefas[currentDay] || []).filter(t => t.u === currentUser);
     document.getElementById('tarefasList').innerHTML = tfs.map(t => `<div class=\"card-clean p-4 flex justify-between items-center\"><span class=\"text-sm font-bold ${t.check?'riscado':''}\">${t.txt}</span><div class=\"flex gap-2\"><button onclick=\"toggleTarefa(${t.id})\" class=\"w-8 h-8 rounded-full ${t.check?'bg-emerald-100 text-emerald-600':'bg-slate-50 text-slate-300'}\">✓</button><button onclick=\"db.tarefas['${currentDay}']=db.tarefas['${currentDay}'].filter(x=>x.id!==${t.id});save()\" class=\"text-slate-200\">✕</button></div></div>`).join("");
 
+    // FINANÇAS
     document.getElementById('fin-meses-nav').innerHTML = meses.map(m => `<button onclick=\"currentMes='${m}';render()\" class=\"px-4 py-2 rounded-xl text-[9px] font-black uppercase whitespace-nowrap ${currentMes===m?'bg-indigo-600 text-white':'bg-white text-slate-400 border'}\">${m}</button>`).join("");
     const f = (db.financasMensal[currentMes] && db.financasMensal[currentMes][currentUser]) || {};
     document.getElementById('in-salario').value = f.salario || "";
@@ -514,14 +534,7 @@ function render() {
     `).join("");
 
     const totalSaidasVar = saidasVar.reduce((a, b) => a + parseFloat(b.v), 0);
-    const totalLivre = (f.salario || 0) 
-                       - (f.fixo_academia || 0) 
-                       - (f.fixo_celular || 0) 
-                       - (f.fixo_internet || 0) 
-                       - (f.caixinhaValor || 0) 
-                       - (f.lazerEntrada || 0) 
-                       - totalSaidasVar;
-
+    const totalLivre = (f.salario || 0) - (f.fixo_academia || 0) - (f.fixo_celular || 0) - (f.fixo_internet || 0) - (f.caixinhaValor || 0) - (f.lazerEntrada || 0) - totalSaidasVar;
     const vrFinal = (f.vr || 0) - (f.fixo_alimentacao || 0);
 
     document.getElementById('fin-saldo-final').innerText = totalLivre.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
@@ -531,7 +544,6 @@ function render() {
             <div class="bg-indigo-900 p-3 rounded-2xl border border-indigo-700">
                 <p class="text-[8px] font-black text-indigo-300 uppercase">VR/VA Disponível</p>
                 <p class="text-sm font-bold text-white">${vrFinal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</p>
-                <p class="text-[7px] text-indigo-400 italic">Descontado do Fixo Alimentação</p>
             </div>
             <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
                 <p class="text-[8px] font-black text-indigo-600 uppercase">Reserva Casa</p>
@@ -540,23 +552,25 @@ function render() {
         </div>
     `;
 
+    // COMPRAS (RENDER CORRIGIDO)
     const comps = db.compras || [];
     const categories = [...new Set(comps.map(i => i.cat))];
     document.getElementById('comprasList').innerHTML = categories.map(cat => `
-        <div class=\"space-y-2\">
-            <h4 class=\"text-[9px] font-black uppercase text-indigo-400 tracking-widest ml-2\">${cat}</h4>
+        <div class="space-y-2">
+            <h4 class="text-[9px] font-black uppercase text-indigo-400 tracking-widest ml-2">${cat}</h4>
             ${comps.filter(i => i.cat === cat).map(i => `
-                <div class=\"card-clean p-4 flex items-center justify-between\">
-                    <span class=\"${i.check?'riscado':''} font-bold text-sm\">${i.val}</span>
-                    <div class=\"flex gap-2\">
-                        <button onclick=\"db.compras.find(c=>c.id===${i.id}).check=!i.check;save()\" class=\"w-8 h-8 rounded-full ${i.check?'bg-indigo-100 text-indigo-600':'bg-slate-50 text-slate-300'}\">✓</button>
-                        <button onclick=\"db.compras=db.compras.filter(c=>c.id!==${i.id});save()\" class=\"text-rose-300\">🗑</button>
+                <div class="card-clean p-4 flex items-center justify-between">
+                    <span class="${i.check ? 'riscado' : ''} font-bold text-sm">${i.val}</span>
+                    <div class="flex gap-2">
+                        <button onclick="alternarCheckCompra(${i.id})" class="w-8 h-8 rounded-full ${i.check ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-50 text-slate-300'}">✓</button>
+                        <button onclick="removerCompra(${i.id})" class="text-rose-300">🗑</button>
                     </div>
                 </div>
             `).join('')}
         </div>
     `).join("");
 
+    // LAZER (RENDER)
     const lzCats = ["Restaurante", "Bar", "Pizzarias", "Cinemas", "Cafés"];
     document.getElementById('lazer-tabs').innerHTML = lzCats.map(c => `<button onclick=\"currentLazerCat='${c}';render()\" class=\"flex-1 py-3 px-2 text-[9px] font-black rounded-xl ${currentLazerCat===c?'bg-slate-900 text-white':'text-slate-400'} uppercase\">${c}</button>`).join("");
     document.getElementById('lazerList').innerHTML = (db.lazer || []).filter(x => x.cat === currentLazerCat).map(l => `<div class=\"card-clean p-4 flex justify-between items-center\"><div><p class=\"text-sm font-bold\">${l.n}</p><p class=\"text-[10px] text-slate-400\">R$ ${l.vlr}</p></div><button onclick=\"db.lazer=db.lazer.filter(x=>x.id!==${l.id});save()\" class=\"text-slate-200\">✕</button></div>`).join("");
@@ -568,6 +582,7 @@ function render() {
         elLazerDisplay.className = saldoLazerCalculado < 0 ? "text-xl font-black text-rose-600 mt-1" : "text-xl font-black text-indigo-700 mt-1";
     }
 
+    // LOGS E AGENDA (RENDER)
     document.getElementById('logsDisplay').innerHTML = (db.logs || []).slice(0,10).map(l => `<div class=\"card-clean p-3 text-[10px] font-bold text-slate-400 uppercase\">${l.h} - ${l.u}: ${l.msg}</div>`).join("");
     document.getElementById('agendaList').innerHTML = (db.agenda || []).filter(a => a.u === currentUser).sort((a,b)=>new Date(a.data)-new Date(b.data)).slice(0,3).map(a => `<div class=\"card-clean p-4 text-xs font-bold uppercase flex justify-between\"><span>${a.data.split('-').reverse().join('/')} - ${a.txt}</span></div>`).join("");
 }
